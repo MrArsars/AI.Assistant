@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI.Assistant.Bot", "AI.Assistant.Bot\AI.Assistant.Bot.csproj", "{DF992E59-20E6-4BF7-B038-3EBA0BAB90B9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DF992E59-20E6-4BF7-B038-3EBA0BAB90B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF992E59-20E6-4BF7-B038-3EBA0BAB90B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF992E59-20E6-4BF7-B038-3EBA0BAB90B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF992E59-20E6-4BF7-B038-3EBA0BAB90B9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
