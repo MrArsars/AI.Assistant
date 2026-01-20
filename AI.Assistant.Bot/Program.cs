@@ -1,9 +1,12 @@
 ﻿using System.Text;
 using AI.Assistant.Bot.Handlers;
+using AI.Assistant.Bot.Plugins;
 using AI.Assistant.Bot.Services;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.Google;
 using Supabase;
 using Telegram.Bot;
 
@@ -12,24 +15,36 @@ Console.InputEncoding = Encoding.UTF8;
 
 var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
 
-var supabase = new Supabase.Client(config["SupabaseUrl"]!, config["SupabaseApiToken"],
+var supabase = new Client(config["SupabaseUrl"]!, config["SupabaseApiToken"],
     new SupabaseOptions { AutoConnectRealtime = true });
 await supabase.InitializeAsync();
 
-var kernel = Kernel.CreateBuilder()
-    .AddGoogleAIGeminiChatCompletion(config["GeminiModel"]!, config["GeminiApiToken"]!)
-    .Build();
+var builder = Kernel.CreateBuilder()
+    .AddGoogleAIGeminiChatCompletion(config["GeminiModel"]!, config["GeminiApiToken"]!);
 
-var chatService = new ChatService(supabase, config.GetValue<int>("HistoryMessagesLimit"));
-var chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
 var botClient = new TelegramBotClient(config["TelegramBotToken"]!);
 var systemPrompt = ChatService.LoadSystemInstruction();
+
+var serviceCollection = new ServiceCollection();
+serviceCollection.AddScoped<IChatService>(sp =>
+{
+    var historyLimit = config.GetValue<int>("HistoryMessagesLimit");
+    return new ChatService(supabase, historyLimit);
+});
+var serviceProvider = serviceCollection.BuildServiceProvider();
+
+var chatService = serviceProvider.GetRequiredService<IChatService>();
+
+builder.Plugins.AddFromType<PermanentMemoryPlugin>("Memory");
+var kernel = builder.Build();
+var chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
+kernel.Data["sp"] = serviceProvider;
 
 var botHandler = new BotHandler(
     botClient,
     chatCompletion,
-    chatService,
     kernel,
+    chatService,
     systemPrompt);
 
 botClient.OnMessage += botHandler.HandleUpdateAsync;

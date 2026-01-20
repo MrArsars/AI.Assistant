@@ -1,4 +1,6 @@
 ﻿using AI.Assistant.Bot.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel.Connectors.Google;
 
 namespace AI.Assistant.Bot.Handlers;
 
@@ -11,21 +13,22 @@ using Microsoft.SemanticKernel;
 public class BotHandler(
     ITelegramBotClient botClient,
     IChatCompletionService chatCompletion,
-    ChatService chatService,
     Kernel kernel,
+    IChatService  chatService,
     string systemPrompt)
 {
-    // private readonly ChatHistory _history = new(systemPrompt);
+    //TODO: ConcurrentDictionary
     private Dictionary<long, ChatHistory> _historiesCollection = new();
 
     public async Task HandleUpdateAsync(Message msg, UpdateType type)
     {
         if (msg.Text is null) return;
-
+        
         Console.WriteLine($"Received {type} '{msg.Text}' from {msg.Chat.Id}");
+        Console.WriteLine($"Plugins in kernel: {kernel.Plugins.Count}");
         if (!_historiesCollection.ContainsKey(msg.Chat.Id))
         {
-            _historiesCollection.Add(msg.Chat.Id, new ChatHistory(systemPrompt));
+            _historiesCollection.Add(msg.Chat.Id, new ChatHistory(/*systemPrompt*/));
             Console.WriteLine($"Created new history with chatId {msg.Chat.Id}");
             await GetLatestMessagesAsync(msg.Chat.Id, _historiesCollection[msg.Chat.Id]);
         }
@@ -36,8 +39,17 @@ public class BotHandler(
         chatService.TrimHistory(history);
         history.AddUserMessage(msg.Text);
         await chatService.SaveMessageAsync(msg.Chat.Id, AuthorRole.User, msg.Text);
-
-        var result = await chatCompletion.GetChatMessageContentAsync(history, kernel: kernel);
+        
+        var promptExecutionSettings = new GeminiPromptExecutionSettings() 
+        { 
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions,
+        };
+        
+        kernel.Data["chatId"] =  msg.Chat.Id;
+        var result = await chatCompletion.GetChatMessageContentAsync(
+            history,
+            kernel: kernel,
+            executionSettings: promptExecutionSettings);
         var reply = result.Content ?? "Вибач, сталася помилка.";
 
         history.AddAssistantMessage(reply);

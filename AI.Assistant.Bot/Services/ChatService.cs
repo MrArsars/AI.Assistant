@@ -1,19 +1,20 @@
 ﻿using System.Text;
 using AI.Assistant.Bot.Models;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Telegram.Bot.Types;
 
 namespace AI.Assistant.Bot.Services;
 
-public class ChatService(Supabase.Client supabase, int historyLimit)
+public class ChatService(Supabase.Client supabase, int historyLimit) : IChatService
 {
     //TODO:Review method
     public void TrimHistory(ChatHistory history)
     {
-        while (history.Count > historyLimit)
-        {
-            if (history.Count > 1) history.RemoveRange(1, Math.Min(2, history.Count - 1));
-            else break;
-        }
+        // while (history.Count > historyLimit)
+        // {
+        //     if (history.Count > 1) history.RemoveRange(1, Math.Min(2, history.Count - 1));
+        //     else break;
+        // }
     }
 
     public async Task SaveMessageAsync(long chatId, AuthorRole role, string text)
@@ -55,5 +56,18 @@ public class ChatService(Supabase.Client supabase, int historyLimit)
         }
 
         return loadedHistory;
+    }
+
+    public async Task SavePermanentAsync(long chatId, string info)
+    {
+
+        var memory = new PermanentMemoryModel()
+        {
+            ChatId = chatId,
+            CreatedAt = DateTime.Now,
+            Text = info,
+        };
+        
+        await supabase.From<PermanentMemoryModel>().Insert(memory);
     }
 }
