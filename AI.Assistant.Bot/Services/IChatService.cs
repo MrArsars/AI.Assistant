@@ -9,4 +9,5 @@ public interface IChatService
     Task SaveMessageAsync(long chatId, AuthorRole role, string text);
     Task<ChatHistory> LoadHistoryAsync(long chatId);
     Task SavePermanentAsync(long chatId, string info);
+    Task<List<string>> GetPermanentMemoriesAsync(long chatId);
 }

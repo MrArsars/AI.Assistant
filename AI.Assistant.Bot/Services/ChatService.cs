@@ -60,7 +60,6 @@ public class ChatService(Supabase.Client supabase, int historyLimit) : IChatServ
 
     public async Task SavePermanentAsync(long chatId, string info)
     {
-
         var memory = new PermanentMemoryModel()
         {
             ChatId = chatId,
@@ -69,5 +68,11 @@ public class ChatService(Supabase.Client supabase, int historyLimit) : IChatServ
         };
         
         await supabase.From<PermanentMemoryModel>().Insert(memory);
+    }
+
+    public async Task<List<string>> GetPermanentMemoriesAsync(long chatId)
+    {
+        var rows = await supabase.From<PermanentMemoryModel>().Where(x => x.ChatId == chatId).Get();
+        return rows.Models.Select(x => x.Text).ToList();
     }
 }
