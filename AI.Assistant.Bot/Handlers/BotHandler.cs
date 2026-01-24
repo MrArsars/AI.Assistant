@@ -1,5 +1,8 @@
-﻿using AI.Assistant.Bot.Services;
+﻿using AI.Assistant.Bot.Models;
+using AI.Assistant.Bot.Repositories;
+using AI.Assistant.Bot.Services;
 using Microsoft.SemanticKernel.Connectors.Google;
+using Telegram.Bot.Exceptions;
 
 namespace AI.Assistant.Bot.Handlers;
 
@@ -10,26 +13,25 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel;
 
 public class BotHandler(
-    ITelegramBotClient botClient,
     IChatCompletionService chatCompletion,
     Kernel kernel,
     IChatService  chatService,
-    string systemPrompt)
+    IMessagesRepository messagesRepository,
+    IHistoryService historyService)
 {
     //TODO: ConcurrentDictionary
     private Dictionary<long, ChatHistory> _historiesCollection = new();
 
-    public async Task HandleUpdateAsync(Message msg, UpdateType type)
+    public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
+        var msg = update.Message;
         if (msg.Text is null) return;
         
-        Console.WriteLine($"Received {type} '{msg.Text}' from {msg.Chat.Id}");
+        Console.WriteLine($"Received {update.Type} '{msg.Text}' from {msg.Chat.Id}");
         Console.WriteLine($"Plugins in kernel: {kernel.Plugins.Count}");
         if (!_historiesCollection.ContainsKey(msg.Chat.Id))
         {
-            _historiesCollection.Add(msg.Chat.Id, new ChatHistory(systemPrompt));
-            Console.WriteLine($"Created new history with chatId {msg.Chat.Id}");
-            await GetLatestMessagesAsync(msg.Chat.Id, _historiesCollection[msg.Chat.Id]);
+            _historiesCollection.Add(msg.Chat.Id, await historyService.Initialize(msg.Chat.Id));
             await GetPermanentMemoriesAsync(msg.Chat.Id, _historiesCollection[msg.Chat.Id]);
         }
 
@@ -38,7 +40,14 @@ public class BotHandler(
         var history = _historiesCollection[msg.Chat.Id];
         chatService.TrimHistory(history);
         history.AddUserMessage(msg.Text);
-        await chatService.SaveMessageAsync(msg.Chat.Id, AuthorRole.User, msg.Text);
+        var model = new MessageModel
+        {
+            ChatId = msg.Chat.Id,
+            Role = AuthorRole.User.ToString(),
+            Text = msg.Text,
+            CreatedAt = DateTime.Now
+        };
+        await messagesRepository.SaveMessageAsync(model);
         
         var promptExecutionSettings = new GeminiPromptExecutionSettings() 
         { 
@@ -58,12 +67,17 @@ public class BotHandler(
         await botClient.SendMessage(msg.Chat.Id, reply);
     }
 
-    private async Task GetLatestMessagesAsync(long chatId, ChatHistory history)
+    public async Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
     {
-        var latestMessages = await chatService.LoadHistoryAsync(chatId);
-        var receivedMessagesCount =  latestMessages.Count;
-        history.AddRange(latestMessages);
-        Console.WriteLine($"Got {receivedMessagesCount} history messages from DB on chatId {chatId}");
+        var errorMessage = exception switch
+        {
+            ApiRequestException apiRequestException
+                => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
+            _ => exception.ToString()
+        };
+
+        Console.WriteLine(errorMessage);
+        await Task.CompletedTask;
     }
 
     private async Task GetPermanentMemoriesAsync(long chatId, ChatHistory history)

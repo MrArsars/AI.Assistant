@@ -5,7 +5,7 @@ using Telegram.Bot.Types;
 
 namespace AI.Assistant.Bot.Services;
 
-public class ChatService(Supabase.Client supabase, int historyLimit) : IChatService
+public class ChatService(Supabase.Client supabase, Settings settings) : IChatService
 {
     //TODO:Review method
     public void TrimHistory(ChatHistory history)
@@ -42,7 +42,7 @@ public class ChatService(Supabase.Client supabase, int historyLimit) : IChatServ
     public async Task<ChatHistory> LoadHistoryAsync(long chatId)
     {
         var loadedHistory = new ChatHistory();
-        var rows = await supabase.From<MessageModel>().Where(x => x.ChatId == chatId).Limit(historyLimit).Get();
+        var rows = await supabase.From<MessageModel>().Where(x => x.ChatId == chatId).Limit(settings.HistoryLimit).Get();
         foreach (var msg in rows.Models)
         {
             if (msg.Role == AuthorRole.Assistant.Label)
