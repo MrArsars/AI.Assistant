@@ -1,81 +1,83 @@
-🤖 AI.Assistant (Gemini Telegram Bot)
-AI.Assistant is an intelligent Telegram bot built on .NET 8 and powered by Microsoft Semantic Kernel. The bot leverages the advanced capabilities of the Google Gemini model for natural conversations and Supabase for persistent chat history and long-term user context (memory).
+# 🤖 AI.Assistant (Gemini Telegram Bot)
 
-The project is designed following Clean Architecture principles, utilizing Dependency Injection (DI) and a modular service-oriented structure, making it highly scalable and easy to maintain.
+[![.NET 8](https://img.shields.io/badge/.NET-8.0-512bd4?logo=dotnet)](https://dotnet.microsoft.com/)
+[![Semantic Kernel](https://img.shields.io/badge/Semantic--Kernel-Microsoft-blue?logo=microsoft)](https://github.com/microsoft/semantic-kernel)
+[![Gemini AI](https://img.shields.io/badge/Model-Gemini--1.5--Flash-orange?logo=google-gemini)](https://deepmind.google/technologies/gemini/)
+[![Supabase](https://img.shields.io/badge/Database-Supabase-green?logo=supabase)](https://supabase.com/)
 
-✨ Key Features
-🧠 Intelligent Dialogues: Natural, context-aware conversations powered by Google Gemini AI.
+An intelligent Telegram bot built with **.NET 8** and **Microsoft Semantic Kernel**. The bot leverages **Google Gemini** for natural conversations and **Supabase** for persistent chat history and long-term user memory.
 
-💾 Long-term Memory: The bot "remembers" important facts about the user (e.g., name, preferences, details) using a dedicated Native Plugin that interfaces with Supabase.
+---
 
-📜 Chat History Management: Automatic saving and loading of chat history per user to maintain conversation flow across sessions.
+## ✨ Key Features
 
-🔌 Semantic Kernel Plugins: Extends AI capabilities with custom C# functions (Native Functions), allowing the LLM to interact directly with your database.
+* **🧠 Intelligent Dialogues** – Seamless context-aware conversations using Gemini 1.5.
+* **💾 Long-term Memory** – Remembers user facts (name, hobbies, etc.) using a custom **ContextPlugin**.
+* **📜 History Management** – Persists chat history in Supabase, loading it automatically for each session.
+* **🔌 Semantic Kernel Plugins** – Built-in support for tool calling (Native Functions).
+* **🏗 Clean Architecture** – Professional structure with Repository and Service patterns.
 
-🏗️ Robust Architecture: Clear separation of concerns between Repositories, Services, and Handlers.
+---
 
-🛠 Tech Stack
-Language: C# (.NET 8)
+## 🛠 Tech Stack
 
-AI Orchestration: Microsoft Semantic Kernel
+| Component          | Technology                                                                 |
+| :----------------- | :------------------------------------------------------------------------- |
+| **Framework** | .NET 8.0                                                                   |
+| **AI Orchestrator**| Microsoft Semantic Kernel                                                  |
+| **LLM** | Google Gemini 1.5 Flash                                                    |
+| **Database** | Supabase (PostgreSQL)                                                      |
+| **Telegram API** | [Telegram.Bot](https://github.com/TelegramBots/Telegram.Bot)               |
+| **DI Container** | Microsoft.Extensions.DependencyInjection                                   |
 
-LLM: Google Gemini 1.5 Flash / Pro
+---
 
-Database & Auth: Supabase (PostgreSQL)
+## 🏗 Project Architecture
 
-Telegram API: Telegram.Bot
+The project follows a modular approach to ensure scalability and testability:
 
-Dependency Injection: Microsoft.Extensions.DependencyInjection
+* **`Handlers/`** – Manages the Telegram update loop and message routing.
+* **`Services/`** – Contains business logic for history orchestration and AI processing.
+* **`Repositories/`** – Direct data access layer for Supabase (Messages & Context).
+* **`Plugins/`** – Native C# functions that the AI can call (Tool calling).
+* **`Extensions/`** – Fluent mapping for Telegram objects and database models.
 
-🏗 Architecture Overview
-The project is implemented with a focus on modern software engineering practices:
+---
 
-Repository Pattern: Data access logic is isolated in MessagesRepository and ContextRepository, decoupling the database provider from the business logic.
+## 🚀 Getting Started
 
-Service Layer: Core business logic is encapsulated within specialized services like ChatService and HistoryService.
+### 1. Prerequisites
+* .NET 8 SDK
+* Telegram Bot Token (from @BotFather)
+* Google AI API Key (Gemini)
+* Supabase Project (URL and Anon Key)
 
-Plugin-based AI: AI capabilities are expanded via ContextPlugin, allowing the model to trigger C# methods for data persistence.
+### 2. Configuration
+Create an `appsettings.json` file in the root directory:
 
-Fluent Extensions: Object mapping and repetitive tasks are handled through Extension Methods to keep the main codebase clean and readable.
-
-🚀 Quick Start
-1. Clone the repository
-Bash
-git clone https://github.com/MrArsars/AI.Assistant.git
-cd AI.Assistant
-2. Configuration
-Create an appsettings.json file in the root directory and add your credentials:
-
-JSON
+```json
 {
-  "TelegramBotToken": "YOUR_TELEGRAM_BOT_TOKEN",
-  "GeminiApiToken": "YOUR_GEMINI_API_KEY",
+  "TelegramBotToken": "YOUR_TELEGRAM_TOKEN",
+  "GeminiApiToken": "YOUR_GEMINI_KEY",
   "GeminiModel": "gemini-1.5-flash",
-  "SupabaseUrl": "https://your-project.supabase.co",
-  "SupabaseApiToken": "YOUR_SUPABASE_ANON_KEY",
+  "SupabaseUrl": "[https://your-project.supabase.co](https://your-project.supabase.co)",
+  "SupabaseApiToken": "YOUR_SUPABASE_KEY",
   "HistoryMessagesLimit": 10
 }
-3. Run the application
-Bash
+```
+### 3. Build & Run
+```bash
+dotnet build
 dotnet run
-📂 Project Structure
-Handlers/ — Logic for processing incoming Telegram updates and managing the main bot loop.
+```
+## 📈 Roadmap
 
-Services/ — Business logic for history management and AI interaction.
+- [ ] **Proactive Memory** – Bot suggests facts to remember autonomously.
+- [x] **Repository Pattern** – Abstracted data access.
+- [ ] **Cold Storage Retrieval** – Pulling relevant facts from a large DB only when needed.
+- [ ] **Multimedia** – Vision support for images and documents.
+- [ ] **Logging** – Professional monitoring with Serilog.
 
-Repositories/ — Supabase data access layer and database models.
+---
 
-Plugins/ — Native functions for Semantic Kernel (Tool calling).
-
-Models/ — Data Transfer Objects (DTOs) and database schemas.
-
-Extensions/ — Helper methods for mapping and cleaner syntax.
-
-📈 Roadmap
-[ ] Proactive Memory: Implement logic where the bot suggests remembering important information autonomously.
-
-[ ] Cold Storage Retrieval: Advanced logic to pull relevant facts from a large knowledge base only when necessary.
-
-[ ] Multimedia Support: Process images and voice messages using Gemini Vision capabilities.
-
-[ ] Structured Logging: Integration with Serilog or Microsoft.Extensions.Logging for professional monitoring.
+> Built with ❤️ by [MrArsars](https://github.com/MrArsars)
