@@ -1,6 +1,6 @@
 ﻿using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace AI.Assistant.Bot.Services;
+namespace AI.Assistant.Bot.Services.Interfaces;
 
 public interface IHistoryService
 {

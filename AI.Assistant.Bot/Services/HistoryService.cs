@@ -1,4 +1,5 @@
 ﻿using AI.Assistant.Bot.Repositories;
+using AI.Assistant.Bot.Services.Interfaces;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace AI.Assistant.Bot.Services;
@@ -12,4 +13,5 @@ public class HistoryService(IMessagesRepository messagesRepository, Settings set
         initializedHistory.AddRange(latestHistory);
         return initializedHistory;
     }
+    
 }

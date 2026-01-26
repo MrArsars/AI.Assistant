@@ -1,24 +1,25 @@
-﻿using Supabase.Postgrest.Attributes;
+using Supabase.Postgrest.Attributes;
 using Supabase.Postgrest.Models;
+using Telegram.Bot.Types;
 
 namespace AI.Assistant.Bot.Models;
 
-[Table("Messages")]
-public class MessageModel : BaseModel
+[Table("Context")]
+public class ContextModel : BaseModel
 {
     [PrimaryKey("id", false)] public Guid? Id { get; set; }
     [Column("chat_id")] public long ChatId { get; set; }
-    [Column("role")] public string Role { get; set; } = string.Empty;
     [Column("text")] public string Text { get; set; } = string.Empty;
     [Column("created_at")] public DateTime CreatedAt { get; set; }
-    
-    public MessageModel(){}
 
-    public MessageModel(long chatId, string role, string text)
+    public ContextModel()
+    {
+    }
+
+    public ContextModel(long chatId, string info)
     {
         ChatId = chatId;
-        Role = role;
-        Text = text;
+        Text = info;
         CreatedAt = DateTime.Now;
     }
 }

@@ -1,13 +1,11 @@
 using Microsoft.SemanticKernel.ChatCompletion;
 using Telegram.Bot.Types;
 
-namespace AI.Assistant.Bot.Services;
+namespace AI.Assistant.Bot.Services.Interfaces;
 
 public interface IChatService
 {
+    Task InitializeHistoryWithContextAsync(long chatId, Dictionary<long, ChatHistory> historiesCollection);
+    Task HandleIncomingMessageAsync(ChatHistory history, Message message);  
     void TrimHistory(ChatHistory history);
-    Task SaveMessageAsync(long chatId, AuthorRole role, string text);
-    Task<ChatHistory> LoadHistoryAsync(long chatId);
-    Task SavePermanentAsync(long chatId, string info);
-    Task<List<string>> GetPermanentMemoriesAsync(long chatId);
 }

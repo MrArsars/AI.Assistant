@@ -1,12 +1,56 @@
 ﻿using System.Text;
+using AI.Assistant.Bot.Extensions;
 using AI.Assistant.Bot.Models;
+using AI.Assistant.Bot.Repositories;
+using AI.Assistant.Bot.Services.Interfaces;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.Google;
+using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace AI.Assistant.Bot.Services;
 
-public class ChatService(Supabase.Client supabase, Settings settings) : IChatService
+public class ChatService(
+    IContextService contextService,
+    IHistoryService historyService,
+    Kernel kernel,
+    IChatCompletionService chatCompletionService,
+    IMessagesRepository messagesRepository,
+    GeminiPromptExecutionSettings geminiPromptExecutionSettings,
+    ITelegramBotClient telegramBotClient) : IChatService
 {
+    public async Task InitializeHistoryWithContextAsync(long chatId, Dictionary<long, ChatHistory> historiesCollection)
+    {
+        var initializedHistory = await historyService.Initialize(chatId);
+        historiesCollection.Add(chatId, initializedHistory);
+        var context = await contextService.GetContextByChatIdAsync(chatId);
+        initializedHistory.AddSystemMessages(context);
+    }
+
+    public async Task HandleIncomingMessageAsync(ChatHistory history, Message message)
+    {
+        history.AddUserMessage(message.Text!);
+        var userMessage = new MessageModel(message.Chat.Id, AuthorRole.User.Label, message.Text!);
+        await messagesRepository.SaveMessageAsync(userMessage);
+
+        kernel.Data["chatId"] = message.Chat.Id;
+        kernel.Data["history"] = history;
+        
+        var result = await chatCompletionService.GetChatMessageContentAsync(
+            history,
+            kernel: kernel,
+            executionSettings: geminiPromptExecutionSettings);
+        
+        var reply = result.Content ?? "Вибач, сталася помилка.";
+
+        history.AddAssistantMessage(reply);
+        var assistantMessage = new MessageModel(message.Chat.Id, AuthorRole.Assistant.Label, reply);
+        await messagesRepository.SaveMessageAsync(assistantMessage);
+        
+        await telegramBotClient.SendMessage(message.Chat.Id, reply);
+    }
+
     //TODO:Review method
     public void TrimHistory(ChatHistory history)
     {
@@ -17,18 +61,6 @@ public class ChatService(Supabase.Client supabase, Settings settings) : IChatSer
         // }
     }
 
-    public async Task SaveMessageAsync(long chatId, AuthorRole role, string text)
-    {
-        var model = new MessageModel
-        {
-            ChatId = chatId,
-            Role = role.ToString(),
-            Text = text,
-            CreatedAt = DateTime.Now
-        };
-        await supabase.From<MessageModel>().Insert(model);
-    }
-
     public static string LoadSystemInstruction()
     {
         var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Prompts", "system_instruction.txt");
@@ -37,42 +69,5 @@ public class ChatService(Supabase.Client supabase, Settings settings) : IChatSer
             throw new FileNotFoundException($"Промпт не знайдено за шляхом: {filePath}");
 
         return File.ReadAllText(filePath, Encoding.UTF8);
-    }
-
-    public async Task<ChatHistory> LoadHistoryAsync(long chatId)
-    {
-        var loadedHistory = new ChatHistory();
-        var rows = await supabase.From<MessageModel>().Where(x => x.ChatId == chatId).Limit(settings.HistoryLimit).Get();
-        foreach (var msg in rows.Models)
-        {
-            if (msg.Role == AuthorRole.Assistant.Label)
-            {
-                loadedHistory.AddAssistantMessage(msg.Text);
-                continue;
-            }
-
-            if (msg.Role == AuthorRole.User.Label)
-                loadedHistory.AddUserMessage(msg.Text);
-        }
-
-        return loadedHistory;
-    }
-
-    public async Task SavePermanentAsync(long chatId, string info)
-    {
-        var memory = new PermanentMemoryModel()
-        {
-            ChatId = chatId,
-            CreatedAt = DateTime.Now,
-            Text = info,
-        };
-        
-        await supabase.From<PermanentMemoryModel>().Insert(memory);
-    }
-
-    public async Task<List<string>> GetPermanentMemoriesAsync(long chatId)
-    {
-        var rows = await supabase.From<PermanentMemoryModel>().Where(x => x.ChatId == chatId).Get();
-        return rows.Models.Select(x => x.Text).ToList();
     }
 }

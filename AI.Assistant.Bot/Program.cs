@@ -3,7 +3,9 @@ using AI.Assistant.Bot;
 using AI.Assistant.Bot.Handlers;
 using AI.Assistant.Bot.Plugins;
 using AI.Assistant.Bot.Repositories;
+using AI.Assistant.Bot.Repositories.Interfaces;
 using AI.Assistant.Bot.Services;
+using AI.Assistant.Bot.Services.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
@@ -12,7 +14,6 @@ using Microsoft.SemanticKernel.Connectors.Google;
 using Supabase;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
-using Telegram.Bot.Types.Enums;
 
 Console.OutputEncoding = Encoding.UTF8;
 Console.InputEncoding = Encoding.UTF8;
@@ -23,15 +24,9 @@ var supabase = new Client(config["SupabaseUrl"]!, config["SupabaseApiToken"],
     new SupabaseOptions { AutoConnectRealtime = true });
 await supabase.InitializeAsync();
 
-var builder = Kernel.CreateBuilder()
-    .AddGoogleAIGeminiChatCompletion(config["GeminiModel"]!, config["GeminiApiToken"]!);
-
 var systemPrompt = ChatService.LoadSystemInstruction();
 var historyLimit = config.GetValue<int>("HistoryMessagesLimit");
 
-builder.Plugins.AddFromType<PermanentMemoryPlugin>("Memory");
-var kernel = builder.Build();
-var chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
 
 var settings = new Settings() {HistoryLimit =  historyLimit, SystemPrompt = systemPrompt};
 
@@ -41,18 +36,30 @@ serviceCollection.AddSingleton<Supabase.Client>(supabase);
 serviceCollection.AddSingleton<ITelegramBotClient>(new TelegramBotClient(config["TelegramBotToken"]!));
 serviceCollection.AddSingleton<IChatService, ChatService>();
 serviceCollection.AddSingleton<IMessagesRepository, MessagesRepository>();
+serviceCollection.AddSingleton<IContextRepository, ContextRepository>();
 serviceCollection.AddSingleton<IHistoryService, HistoryService>();
+serviceCollection.AddSingleton<IContextService, ContextService>();
+serviceCollection.AddSingleton<ContextPlugin>();
 serviceCollection.AddSingleton<BotHandler>();
-serviceCollection.AddSingleton<Kernel>(kernel);
-serviceCollection.AddSingleton<IChatCompletionService>(chatCompletion);
 serviceCollection.AddSingleton(new GeminiPromptExecutionSettings() 
 { 
-    FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() 
+    ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
 });
+serviceCollection.AddSingleton<Kernel>(sp =>
+{
+    var kernelBuilder = Kernel.CreateBuilder();
+
+    kernelBuilder.AddGoogleAIGeminiChatCompletion(config["GeminiModel"]!, config["GeminiApiToken"]!);
+
+    var contextPlugin = sp.GetRequiredService<ContextPlugin>();
+    kernelBuilder.Plugins.AddFromObject(contextPlugin, "Context");
+
+    return kernelBuilder.Build();
+});
+serviceCollection.AddSingleton<IChatCompletionService>(sp => 
+    sp.GetRequiredService<Kernel>().GetRequiredService<IChatCompletionService>());
 
 var serviceProvider = serviceCollection.BuildServiceProvider();
-
-kernel.Data["sp"] = serviceProvider;
 
 var botHandler = serviceProvider.GetRequiredService<BotHandler>();
 var botClient = serviceProvider.GetRequiredService<ITelegramBotClient>();
