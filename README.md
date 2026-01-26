@@ -2,7 +2,7 @@
 
 [![.NET 8](https://img.shields.io/badge/.NET-8.0-512bd4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![Semantic Kernel](https://img.shields.io/badge/Semantic--Kernel-Microsoft-blue?logo=microsoft)](https://github.com/microsoft/semantic-kernel)
-[![Gemini AI](https://img.shields.io/badge/Model-Gemini--1.5--Flash-orange?logo=google-gemini)](https://deepmind.google/technologies/gemini/)
+[![Gemini AI](https://img.shields.io/badge/Model-Gemini--2.5--Flash-orange?logo=google-gemini)](https://deepmind.google/technologies/gemini/)
 [![Supabase](https://img.shields.io/badge/Database-Supabase-green?logo=supabase)](https://supabase.com/)
 
 An intelligent Telegram bot built with **.NET 8** and **Microsoft Semantic Kernel**. The bot leverages **Google Gemini** for natural conversations and **Supabase** for persistent chat history and long-term user memory.
@@ -25,7 +25,7 @@ An intelligent Telegram bot built with **.NET 8** and **Microsoft Semantic Kerne
 | :----------------- | :------------------------------------------------------------------------- |
 | **Framework** | .NET 8.0                                                                   |
 | **AI Orchestrator**| Microsoft Semantic Kernel                                                  |
-| **LLM** | Google Gemini 1.5 Flash                                                    |
+| **LLM** | Google Gemini 2.5 Flash                                                    |
 | **Database** | Supabase (PostgreSQL)                                                      |
 | **Telegram API** | [Telegram.Bot](https://github.com/TelegramBots/Telegram.Bot)               |
 | **DI Container** | Microsoft.Extensions.DependencyInjection                                   |
