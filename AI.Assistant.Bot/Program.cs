@@ -26,9 +26,10 @@ await supabase.InitializeAsync();
 
 var systemPrompt = ChatService.LoadSystemInstruction();
 var historyLimit = config.GetValue<int>("HistoryMessagesLimit");
+var tavilyApiKey = config["TavilyApiKey"];
 
 
-var settings = new Settings() {HistoryLimit =  historyLimit, SystemPrompt = systemPrompt};
+var settings = new Settings() {HistoryLimit =  historyLimit, SystemPrompt = systemPrompt, TavilyApiKey = tavilyApiKey};
 
 var serviceCollection = new ServiceCollection();
 serviceCollection.AddSingleton(settings);
@@ -40,6 +41,7 @@ serviceCollection.AddSingleton<IContextRepository, ContextRepository>();
 serviceCollection.AddSingleton<IHistoryService, HistoryService>();
 serviceCollection.AddSingleton<IContextService, ContextService>();
 serviceCollection.AddSingleton<ContextPlugin>();
+serviceCollection.AddSingleton<WebSearchPlugin>();
 serviceCollection.AddSingleton<BotHandler>();
 serviceCollection.AddSingleton(new GeminiPromptExecutionSettings() 
 { 
@@ -52,7 +54,9 @@ serviceCollection.AddSingleton<Kernel>(sp =>
     kernelBuilder.AddGoogleAIGeminiChatCompletion(config["GeminiModel"]!, config["GeminiApiToken"]!);
 
     var contextPlugin = sp.GetRequiredService<ContextPlugin>();
+    var webSearchPlugin = sp.GetRequiredService<WebSearchPlugin>();
     kernelBuilder.Plugins.AddFromObject(contextPlugin, "Context");
+    kernelBuilder.Plugins.AddFromObject(webSearchPlugin, "WebSearch");
 
     return kernelBuilder.Build();
 });
