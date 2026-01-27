@@ -36,19 +36,19 @@ public class ChatService(
 
         kernel.Data["chatId"] = message.Chat.Id;
         kernel.Data["history"] = history;
-        
+
         var result = await chatCompletionService.GetChatMessageContentAsync(
             history,
             kernel: kernel,
             executionSettings: geminiPromptExecutionSettings);
-        
+
         var reply = result.Content ?? "Вибач, сталася помилка.";
 
         history.AddAssistantMessage(reply);
         var assistantMessage = new MessageModel(message.Chat.Id, AuthorRole.Assistant.Label, reply);
         await messagesRepository.SaveMessageAsync(assistantMessage);
-        
-        await telegramBotClient.SendMessage(message.Chat.Id, reply);
+
+        await SendMessageAsync(message.Chat.Id, reply);
     }
 
     //TODO:Review method
@@ -69,5 +69,11 @@ public class ChatService(
             throw new FileNotFoundException($"Промпт не знайдено за шляхом: {filePath}");
 
         return File.ReadAllText(filePath, Encoding.UTF8);
+    }
+
+    private async Task SendMessageAsync(long chatId, string text)
+    {
+        foreach (var chunk in text.ChunkBy())
+            await telegramBotClient.SendMessage(chatId, chunk);
     }
 }
