@@ -8,6 +8,7 @@ using AI.Assistant.Bot.Services;
 using AI.Assistant.Bot.Services.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
@@ -29,25 +30,29 @@ var historyLimit = config.GetValue<int>("HistoryMessagesLimit");
 var tavilyApiKey = config["TavilyApiKey"];
 
 
-var settings = new Settings() {HistoryLimit =  historyLimit, SystemPrompt = systemPrompt, TavilyApiKey = tavilyApiKey};
+var settings = new Settings() { HistoryLimit = historyLimit, SystemPrompt = systemPrompt, TavilyApiKey = tavilyApiKey };
 
-var serviceCollection = new ServiceCollection();
-serviceCollection.AddSingleton(settings);
-serviceCollection.AddSingleton<Supabase.Client>(supabase);
-serviceCollection.AddSingleton<ITelegramBotClient>(new TelegramBotClient(config["TelegramBotToken"]!));
-serviceCollection.AddSingleton<IChatService, ChatService>();
-serviceCollection.AddSingleton<IMessagesRepository, MessagesRepository>();
-serviceCollection.AddSingleton<IContextRepository, ContextRepository>();
-serviceCollection.AddSingleton<IHistoryService, HistoryService>();
-serviceCollection.AddSingleton<IContextService, ContextService>();
-serviceCollection.AddSingleton<ContextPlugin>();
-serviceCollection.AddSingleton<WebSearchPlugin>();
-serviceCollection.AddSingleton<BotHandler>();
-serviceCollection.AddSingleton(new GeminiPromptExecutionSettings() 
-{ 
+var builder = Host.CreateApplicationBuilder(args);
+builder.Services.AddSingleton(settings);
+builder.Services.AddSingleton<Supabase.Client>(supabase);
+builder.Services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(config["TelegramBotToken"]!));
+builder.Services.AddSingleton<IChatService, ChatService>();
+builder.Services.AddSingleton<IMessagesRepository, MessagesRepository>();
+builder.Services.AddSingleton<IContextRepository, ContextRepository>();
+builder.Services.AddSingleton<IRemindersRepository, RemindersRepository>();
+builder.Services.AddSingleton<IHistoryService, HistoryService>();
+builder.Services.AddSingleton<IContextService, ContextService>();
+builder.Services.AddSingleton<ContextPlugin>();
+builder.Services.AddSingleton<WebSearchPlugin>();
+builder.Services.AddSingleton<BotHandler>();
+
+builder.Services.AddHostedService<ProactiveReminderService>();
+
+builder.Services.AddSingleton(new GeminiPromptExecutionSettings()
+{
     ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
 });
-serviceCollection.AddSingleton<Kernel>(sp =>
+builder.Services.AddSingleton<Kernel>(sp =>
 {
     var kernelBuilder = Kernel.CreateBuilder();
 
@@ -60,13 +65,13 @@ serviceCollection.AddSingleton<Kernel>(sp =>
 
     return kernelBuilder.Build();
 });
-serviceCollection.AddSingleton<IChatCompletionService>(sp => 
+builder.Services.AddSingleton<IChatCompletionService>(sp =>
     sp.GetRequiredService<Kernel>().GetRequiredService<IChatCompletionService>());
 
-var serviceProvider = serviceCollection.BuildServiceProvider();
+using var host = builder.Build();
 
-var botHandler = serviceProvider.GetRequiredService<BotHandler>();
-var botClient = serviceProvider.GetRequiredService<ITelegramBotClient>();
+var botHandler = host.Services.GetRequiredService<BotHandler>();
+var botClient = host.Services.GetRequiredService<ITelegramBotClient>();
 
 var receiverOptions = new ReceiverOptions
 {
@@ -80,4 +85,4 @@ botClient.StartReceiving(
 );
 
 Console.WriteLine("Бот запущений та готовий до роботи!");
-await Task.Delay(-1);
+await host.RunAsync();
