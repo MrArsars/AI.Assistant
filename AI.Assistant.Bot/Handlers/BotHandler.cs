@@ -7,9 +7,7 @@ using Microsoft.SemanticKernel;
 
 namespace AI.Assistant.Bot.Handlers;
 
-public class BotHandler(
-    Kernel kernel,
-    IChatService chatService)
+public class BotHandler(IChatService chatService)
 {
     //TODO: ConcurrentDictionary
     private Dictionary<long, ChatHistory> _historiesCollection = new();
@@ -22,7 +20,7 @@ public class BotHandler(
 
         if (!_historiesCollection.ContainsKey(msg.Chat.Id))
             await chatService.InitializeHistoryWithContextAsync(msg.Chat.Id, _historiesCollection);
-        
+
         var history = _historiesCollection[msg.Chat.Id];
 
         await chatService.HandleIncomingMessageAsync(history, msg);

@@ -42,8 +42,10 @@ builder.Services.AddSingleton<IContextRepository, ContextRepository>();
 builder.Services.AddSingleton<IRemindersRepository, RemindersRepository>();
 builder.Services.AddSingleton<IHistoryService, HistoryService>();
 builder.Services.AddSingleton<IContextService, ContextService>();
+builder.Services.AddSingleton<IReminderService, ReminderService>();
 builder.Services.AddSingleton<ContextPlugin>();
 builder.Services.AddSingleton<WebSearchPlugin>();
+builder.Services.AddSingleton<RemindersPlugin>();
 builder.Services.AddSingleton<BotHandler>();
 
 builder.Services.AddHostedService<ProactiveReminderService>();
@@ -60,8 +62,10 @@ builder.Services.AddSingleton<Kernel>(sp =>
 
     var contextPlugin = sp.GetRequiredService<ContextPlugin>();
     var webSearchPlugin = sp.GetRequiredService<WebSearchPlugin>();
+    var reminderPlugin = sp.GetRequiredService<RemindersPlugin>();
     kernelBuilder.Plugins.AddFromObject(contextPlugin, "Context");
     kernelBuilder.Plugins.AddFromObject(webSearchPlugin, "WebSearch");
+    kernelBuilder.Plugins.AddFromObject(reminderPlugin, "Reminders");
 
     return kernelBuilder.Build();
 });

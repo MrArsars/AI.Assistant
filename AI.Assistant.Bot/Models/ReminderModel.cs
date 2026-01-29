@@ -1,24 +1,29 @@
-﻿using Supabase.Postgrest.Attributes;
+using Supabase.Postgrest.Attributes;
 using Supabase.Postgrest.Models;
 
 namespace AI.Assistant.Bot.Models;
 
-public class ReminderModel
+[Table("Reminders")]
+public class ReminderModel : BaseModel
 {
-     public Guid? Id { get; set; }
-     public long ChatId { get; set; }
-     public string Message { get; set; } = string.Empty;
-     public string? ReccurenceRule { get; set; }
-     public bool IsActive { get; set; }
-     
-     public ReminderModel(){}
+    [PrimaryKey("id", false)] public Guid? Id { get; set; }
+    [Column("chat_id")] public long ChatId { get; set; }
+    [Column("message")] public string Message { get; set; } = string.Empty;
+    [Column("recurrence_rule")] public string? ReccurenceRule { get; set; }
+    [Column("next_run_at")] public DateTime NextRunAt { get; set; }
+    [Column("is_active")] public bool IsActive { get; set; }
+    [Column("created_at")] public DateTime CreatedAt { get; set; }
 
-     public ReminderModel(ReminderModelDto reminder)
-     {
-          Id = reminder.Id;
-          ChatId = reminder.ChatId;
-          Message = reminder.Message;
-          ReccurenceRule = reminder.ReccurenceRule;
-          IsActive = reminder.IsActive;
-     }
+    public ReminderModel()
+    {
+    }
+
+    public ReminderModel(long chatId, string message, string? recurrentRule, DateTime nextRunAt)
+    {
+        ChatId = chatId;
+        Message = message;
+        ReccurenceRule = recurrentRule;
+        NextRunAt = nextRunAt;
+        IsActive = true;
+    }
 }

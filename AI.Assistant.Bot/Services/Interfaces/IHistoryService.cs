@@ -5,4 +5,5 @@ namespace AI.Assistant.Bot.Services.Interfaces;
 public interface IHistoryService
 {
     Task<ChatHistory> Initialize(long chatId);
+    void UpdateLocalTimeAsync(ChatHistory chatHistory);
 }

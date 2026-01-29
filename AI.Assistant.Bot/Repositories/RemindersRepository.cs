@@ -6,26 +6,23 @@ namespace AI.Assistant.Bot.Repositories;
 
 public class RemindersRepository(Supabase.Client client) : IRemindersRepository
 {
-    public async Task SaveReminderAsync(ReminderModelDto reminder)
+    public async Task SaveReminderAsync(ReminderModel reminder)
     {
-        await client.From<ReminderModelDto>().Insert(reminder);
+        await client.From<ReminderModel>().Insert(reminder);
     }
 
     public async Task<IEnumerable<ReminderModel>> GetNeededRemindersAsync()
     {
-        var response = await client.From<ReminderModelDto>()
+        var response = await client.From<ReminderModel>()
             .Where(x => x.IsActive == true && x.NextRunAt <= DateTime.UtcNow)
             .Get();
 
-        if (response.ResponseMessage is { IsSuccessStatusCode: false })
-            return [];
-
-        return response.Models.Select(dto => new ReminderModel(dto));
+        return response.ResponseMessage is { IsSuccessStatusCode: false } ? [] : response.Models;
     }
 
-    public async Task UpdateReminder(Guid reminderId, bool? isActive = null, DateTime? nextRunAt = null)
+    public async Task UpdateReminderAsync(Guid reminderId, bool? isActive = null, DateTime? nextRunAt = null)
     {
-        var query = client.From<ReminderModelDto>()
+        var query = client.From<ReminderModel>()
             .Where(x => x.Id == reminderId);
 
         if (isActive.HasValue)

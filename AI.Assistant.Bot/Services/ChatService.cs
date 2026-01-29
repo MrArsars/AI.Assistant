@@ -30,6 +30,7 @@ public class ChatService(
 
     public async Task HandleIncomingMessageAsync(ChatHistory history, Message message)
     {
+        historyService.UpdateLocalTimeAsync(history);
         history.AddUserMessage(message.Text!);
         var userMessage = new MessageModel(message.Chat.Id, AuthorRole.User.Label, message.Text!);
         await messagesRepository.SaveMessageAsync(userMessage);

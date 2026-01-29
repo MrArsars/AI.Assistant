@@ -4,7 +4,7 @@ namespace AI.Assistant.Bot.Repositories.Interfaces;
 
 public interface IRemindersRepository
 {
-    Task SaveReminderAsync(ReminderModelDto reminder);
+    Task SaveReminderAsync(ReminderModel reminder);
     Task<IEnumerable<ReminderModel>> GetNeededRemindersAsync();
-    Task UpdateReminder(Guid reminderId, bool? isActive = null, DateTime? nextRunAt = null);
+    Task UpdateReminderAsync(Guid reminderId, bool? isActive = null, DateTime? nextRunAt = null);
 }
