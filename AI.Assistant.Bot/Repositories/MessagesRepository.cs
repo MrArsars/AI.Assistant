@@ -16,7 +16,7 @@ public class MessagesRepository(Supabase.Client client, Settings settings) : IMe
     {
         var rows = await client.From<MessageModel>()
             .Where(x => x.ChatId == chatId)
-            .Limit(useLimit ? settings.HistoryLimit : int.MaxValue)
+            .Limit(useLimit ? settings.HistoryMinLimit : int.MaxValue)
             .Get();
         var messages = rows.Models.Select(m => new ChatMessageContent(new AuthorRole(m.Role), m.Text));
         return new ChatHistory(messages);

@@ -7,25 +7,39 @@ using Telegram.Bot.Types;
 
 namespace AI.Assistant.Bot.Services;
 
-public class HistoryService(IMessagesRepository messagesRepository, IContextService contextService, Settings settings) : IHistoryService
+public class HistoryService(IMessagesRepository messagesRepository, IContextService contextService, Settings settings)
+    : IHistoryService
 {
-    private Dictionary<long, ChatHistory> _historiesCollection = new();
-    
+    private readonly Dictionary<long, ChatHistory> _historiesCollection = new();
+
+    //TODO: get rid of boilerplate
     public async Task<ChatHistory> Initialize(long chatId)
     {
         var dateTimeInstruction = GetCurrentTime();
         var context = await contextService.GetContextByChatIdAsync(chatId);
         var latestHistory = await messagesRepository.GetLatestHistoryByChatIdAsync(chatId);
-        
+
         var history = new ChatHistory(settings.SystemPrompt);
-        
+
         history.AddSystemMessage(dateTimeInstruction);
         history.AddSystemMessages(context);
         history.AddRange(latestHistory);
-        
+
         _historiesCollection.Add(chatId, history);
-        
+
         return history;
+    }
+
+    private async Task Reinitialize(long chatId, ChatHistory history)
+    {
+        var dateTimeInstruction = GetCurrentTime();
+        var context = await contextService.GetContextByChatIdAsync(chatId);
+        var latestHistory = await messagesRepository.GetLatestHistoryByChatIdAsync(chatId);
+
+        history.AddSystemMessage(settings.SystemPrompt);
+        history.AddSystemMessage(dateTimeInstruction);
+        history.AddSystemMessages(context);
+        history.AddRange(latestHistory);
     }
 
     public void UpdateLocalTimeAsync(ChatHistory chatHistory)
@@ -40,7 +54,7 @@ public class HistoryService(IMessagesRepository messagesRepository, IContextServ
         var messageModel = new MessageModel(message.Chat.Id, role.Label, message.Text!);
         await messagesRepository.SaveMessageAsync(messageModel);
     }
-    
+
     public async Task SaveMessageAsync(string text, long chatId, ChatHistory history, AuthorRole role)
     {
         history.AddMessage(role, text);
@@ -57,6 +71,15 @@ public class HistoryService(IMessagesRepository messagesRepository, IContextServ
         };
 
         return history;
+    }
+
+    public async Task TrimHistoryIfNeeded(ChatHistory history, long chatId)
+    {
+        if (history.Count(x => x.Role == AuthorRole.User) > settings.HistoryMaxLimit)
+        {
+            history.Clear();
+            await Reinitialize(chatId, history);
+        }
     }
 
     private static string GetCurrentTime()

@@ -10,7 +10,6 @@ using Telegram.Bot.Types;
 namespace AI.Assistant.Bot.Services;
 
 public class ChatService(
-    IContextService contextService,
     IHistoryService historyService,
     Kernel kernel,
     IChatCompletionService chatCompletionService,
@@ -24,6 +23,8 @@ public class ChatService(
 
         kernel.Data["chatId"] = message.Chat.Id;
         kernel.Data["history"] = history;
+        
+        await historyService.TrimHistoryIfNeeded(history, message.Chat.Id);
 
         var result = await chatCompletionService.GetChatMessageContentAsync(
             history,
@@ -35,16 +36,6 @@ public class ChatService(
         await historyService.SaveMessageAsync(reply, message.Chat.Id, history, AuthorRole.Assistant);
 
         await SendMessageAsync(message.Chat.Id, reply);
-    }
-
-    //TODO:Review method
-    public void TrimHistory(ChatHistory history)
-    {
-        // while (history.Count > historyLimit)
-        // {
-        //     if (history.Count > 1) history.RemoveRange(1, Math.Min(2, history.Count - 1));
-        //     else break;
-        // }
     }
 
     public static string LoadSystemInstruction()

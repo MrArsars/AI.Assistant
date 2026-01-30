@@ -26,11 +26,12 @@ var supabase = new Client(config["SupabaseUrl"]!, config["SupabaseApiToken"],
 await supabase.InitializeAsync();
 
 var systemPrompt = ChatService.LoadSystemInstruction();
-var historyLimit = config.GetValue<int>("HistoryMessagesLimit");
+var historyMaxLimit = config.GetValue<int>("HistoryMessagesMaxLimit");
+var historyMinLimit = config.GetValue<int>("HistoryMessagesMinLimit");
 var tavilyApiKey = config["TavilyApiKey"];
 
 
-var settings = new Settings() { HistoryLimit = historyLimit, SystemPrompt = systemPrompt, TavilyApiKey = tavilyApiKey };
+var settings = new Settings() { HistoryMinLimit = historyMinLimit, HistoryMaxLimit = historyMaxLimit, SystemPrompt = systemPrompt, TavilyApiKey = tavilyApiKey };
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddSingleton(settings);

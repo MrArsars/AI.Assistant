@@ -10,4 +10,5 @@ public interface IHistoryService
     Task SaveMessageAsync(Message message, ChatHistory history, AuthorRole role);
     Task SaveMessageAsync(string text, long chatId, ChatHistory history, AuthorRole role);
     Task<ChatHistory> GetHistoryByChatId(long chatId);
+    Task TrimHistoryIfNeeded(ChatHistory history, long chatId);
 }
