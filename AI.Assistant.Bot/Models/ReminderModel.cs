@@ -25,5 +25,6 @@ public class ReminderModel : BaseModel
         ReccurenceRule = recurrentRule;
         NextRunAt = nextRunAt;
         IsActive = true;
+        CreatedAt = DateTime.Now;
     }
 }

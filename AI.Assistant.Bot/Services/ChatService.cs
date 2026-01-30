@@ -1,7 +1,5 @@
 ﻿using System.Text;
 using AI.Assistant.Bot.Extensions;
-using AI.Assistant.Bot.Models;
-using AI.Assistant.Bot.Repositories;
 using AI.Assistant.Bot.Services.Interfaces;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -16,24 +14,13 @@ public class ChatService(
     IHistoryService historyService,
     Kernel kernel,
     IChatCompletionService chatCompletionService,
-    IMessagesRepository messagesRepository,
     GeminiPromptExecutionSettings geminiPromptExecutionSettings,
     ITelegramBotClient telegramBotClient) : IChatService
 {
-    public async Task InitializeHistoryWithContextAsync(long chatId, Dictionary<long, ChatHistory> historiesCollection)
-    {
-        var initializedHistory = await historyService.Initialize(chatId);
-        historiesCollection.Add(chatId, initializedHistory);
-        var context = await contextService.GetContextByChatIdAsync(chatId);
-        initializedHistory.AddSystemMessages(context);
-    }
-
     public async Task HandleIncomingMessageAsync(ChatHistory history, Message message)
     {
         historyService.UpdateLocalTimeAsync(history);
-        history.AddUserMessage(message.Text!);
-        var userMessage = new MessageModel(message.Chat.Id, AuthorRole.User.Label, message.Text!);
-        await messagesRepository.SaveMessageAsync(userMessage);
+        await historyService.SaveMessageAsync(message, history, AuthorRole.User);
 
         kernel.Data["chatId"] = message.Chat.Id;
         kernel.Data["history"] = history;
@@ -44,10 +31,8 @@ public class ChatService(
             executionSettings: geminiPromptExecutionSettings);
 
         var reply = result.Content ?? "Вибач, сталася помилка.";
-
-        history.AddAssistantMessage(reply);
-        var assistantMessage = new MessageModel(message.Chat.Id, AuthorRole.Assistant.Label, reply);
-        await messagesRepository.SaveMessageAsync(assistantMessage);
+        
+        await historyService.SaveMessageAsync(reply, message.Chat.Id, history, AuthorRole.Assistant);
 
         await SendMessageAsync(message.Chat.Id, reply);
     }
@@ -72,7 +57,7 @@ public class ChatService(
         return File.ReadAllText(filePath, Encoding.UTF8);
     }
 
-    private async Task SendMessageAsync(long chatId, string text)
+    public async Task SendMessageAsync(long chatId, string text)
     {
         foreach (var chunk in text.ChunkBy())
             await telegramBotClient.SendMessage(chatId, chunk);

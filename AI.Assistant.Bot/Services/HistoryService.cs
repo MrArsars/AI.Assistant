@@ -1,25 +1,62 @@
-﻿using AI.Assistant.Bot.Repositories;
+﻿using AI.Assistant.Bot.Extensions;
+using AI.Assistant.Bot.Models;
+using AI.Assistant.Bot.Repositories.Interfaces;
 using AI.Assistant.Bot.Services.Interfaces;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Telegram.Bot.Types;
 
 namespace AI.Assistant.Bot.Services;
 
-public class HistoryService(IMessagesRepository messagesRepository, Settings settings) : IHistoryService
+public class HistoryService(IMessagesRepository messagesRepository, IContextService contextService, Settings settings) : IHistoryService
 {
+    private Dictionary<long, ChatHistory> _historiesCollection = new();
+    
     public async Task<ChatHistory> Initialize(long chatId)
     {
-        var initializedHistory = new ChatHistory(settings.SystemPrompt);
         var dateTimeInstruction = GetCurrentTime();
-        initializedHistory.AddSystemMessage(dateTimeInstruction);
+        var context = await contextService.GetContextByChatIdAsync(chatId);
         var latestHistory = await messagesRepository.GetLatestHistoryByChatIdAsync(chatId);
-        initializedHistory.AddRange(latestHistory);
-        return initializedHistory;
+        
+        var history = new ChatHistory(settings.SystemPrompt);
+        
+        history.AddSystemMessage(dateTimeInstruction);
+        history.AddSystemMessages(context);
+        history.AddRange(latestHistory);
+        
+        _historiesCollection.Add(chatId, history);
+        
+        return history;
     }
 
     public void UpdateLocalTimeAsync(ChatHistory chatHistory)
     {
         var dateTimeInstruction = GetCurrentTime();
         chatHistory[1].Content = dateTimeInstruction;
+    }
+
+    public async Task SaveMessageAsync(Message message, ChatHistory history, AuthorRole role)
+    {
+        history.AddMessage(role, message.Text!);
+        var messageModel = new MessageModel(message.Chat.Id, role.Label, message.Text!);
+        await messagesRepository.SaveMessageAsync(messageModel);
+    }
+    
+    public async Task SaveMessageAsync(string text, long chatId, ChatHistory history, AuthorRole role)
+    {
+        history.AddMessage(role, text);
+        var messageModel = new MessageModel(chatId, role.Label, text);
+        await messagesRepository.SaveMessageAsync(messageModel);
+    }
+
+    public async Task<ChatHistory> GetHistoryByChatId(long chatId)
+    {
+        var history = _historiesCollection.ContainsKey(chatId) switch
+        {
+            true => _historiesCollection[chatId],
+            false => await Initialize(chatId)
+        };
+
+        return history;
     }
 
     private static string GetCurrentTime()

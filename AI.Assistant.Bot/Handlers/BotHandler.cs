@@ -3,14 +3,11 @@ using AI.Assistant.Bot.Services.Interfaces;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel;
 
 namespace AI.Assistant.Bot.Handlers;
 
-public class BotHandler(IChatService chatService)
+public class BotHandler(IChatService chatService, IHistoryService historyService)
 {
-    //TODO: ConcurrentDictionary
-    private Dictionary<long, ChatHistory> _historiesCollection = new();
 
     public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update,
         CancellationToken cancellationToken)
@@ -18,11 +15,7 @@ public class BotHandler(IChatService chatService)
         var msg = update.Message;
         if (msg?.Text is null) return;
 
-        if (!_historiesCollection.ContainsKey(msg.Chat.Id))
-            await chatService.InitializeHistoryWithContextAsync(msg.Chat.Id, _historiesCollection);
-
-        var history = _historiesCollection[msg.Chat.Id];
-
+        var history = await historyService.GetHistoryByChatId(msg.Chat.Id);
         await chatService.HandleIncomingMessageAsync(history, msg);
     }
 

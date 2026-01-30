@@ -1,4 +1,5 @@
 ﻿using AI.Assistant.Bot.Models;
+using AI.Assistant.Bot.Repositories.Interfaces;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 

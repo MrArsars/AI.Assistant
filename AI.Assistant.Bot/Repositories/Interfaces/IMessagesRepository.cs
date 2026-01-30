@@ -1,7 +1,7 @@
 ﻿using AI.Assistant.Bot.Models;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace AI.Assistant.Bot.Repositories;
+namespace AI.Assistant.Bot.Repositories.Interfaces;
 
 public interface IMessagesRepository
 {

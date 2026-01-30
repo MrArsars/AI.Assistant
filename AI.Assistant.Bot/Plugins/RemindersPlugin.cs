@@ -13,7 +13,7 @@ public class RemindersPlugin(IReminderService reminderService)
         " wants to set up a daily report, plans a future task or requests for delayed message from you in future.")]
     public async Task CreateReminderAsync(
         [Description(
-            "The text of notification text that will be sent to the user. E.g., 'Time for your daily progress report!'")]
+            "A friendly, conversational, and personalized text of notification text that will be sent to the user in the user's language. E.g., 'Time for your daily progress report!'")]
         string message,
         [Description("The exact date and time for the reminder. Example: 2026-01-29T21:00:00")]
         DateTime nextRunAt,

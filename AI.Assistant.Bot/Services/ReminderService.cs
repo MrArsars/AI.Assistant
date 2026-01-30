@@ -21,8 +21,8 @@ public class ReminderService(IRemindersRepository remindersRepository) : IRemind
     public async Task UpdateReminderAsync(ReminderModel reminder)
     {
         var reminderId = reminder.Id;
-        bool isActive = reminder.IsActive;
-        DateTime nextRunAt = reminder.NextRunAt;
+        var isActive = reminder.IsActive;
+        var nextRunAt = reminder.NextRunAt;
 
         switch (reminder.ReccurenceRule)
         {
