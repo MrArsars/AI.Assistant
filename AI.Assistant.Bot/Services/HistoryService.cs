@@ -12,7 +12,7 @@ public class HistoryService(IMessagesRepository messagesRepository, IContextServ
 {
     private readonly Dictionary<long, ChatHistory> _historiesCollection = new();
 
-    public async Task<ChatHistory> Initialize(long chatId, ChatHistory? history = null)
+    public async Task<ChatHistory?> Initialize(long chatId, ChatHistory? history = null)
     {
         var dateTimeInstruction = GetCurrentTime();
         var context = await contextService.GetContextByChatIdAsync(chatId);
@@ -29,11 +29,11 @@ public class HistoryService(IMessagesRepository messagesRepository, IContextServ
         history.AddSystemMessages(context);
         history.AddRange(latestHistory);
 
-        if (!isReinitializing)
-            _historiesCollection.Add(chatId, history);
-
+        if (isReinitializing) return null;
+        _historiesCollection.Add(chatId, history);
         return history;
     }
+    
 
     public void UpdateLocalTimeAsync(ChatHistory chatHistory)
     {

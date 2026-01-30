@@ -5,7 +5,7 @@ namespace AI.Assistant.Bot.Services.Interfaces;
 
 public interface IHistoryService
 {
-    Task<ChatHistory> Initialize(long chatId, ChatHistory? history = null);
+    Task<ChatHistory?> Initialize(long chatId, ChatHistory? history = null);
     void UpdateLocalTimeAsync(ChatHistory chatHistory);
     Task SaveMessageAsync(Message message, ChatHistory history, AuthorRole role);
     Task SaveMessageAsync(string text, long chatId, ChatHistory history, AuthorRole role);
