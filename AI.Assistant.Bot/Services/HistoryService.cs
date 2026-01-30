@@ -12,34 +12,27 @@ public class HistoryService(IMessagesRepository messagesRepository, IContextServ
 {
     private readonly Dictionary<long, ChatHistory> _historiesCollection = new();
 
-    //TODO: get rid of boilerplate
-    public async Task<ChatHistory> Initialize(long chatId)
+    public async Task<ChatHistory> Initialize(long chatId, ChatHistory? history = null)
     {
         var dateTimeInstruction = GetCurrentTime();
         var context = await contextService.GetContextByChatIdAsync(chatId);
         var latestHistory = await messagesRepository.GetLatestHistoryByChatIdAsync(chatId);
+        var isReinitializing = false;
 
-        var history = new ChatHistory(settings.SystemPrompt);
-
-        history.AddSystemMessage(dateTimeInstruction);
-        history.AddSystemMessages(context);
-        history.AddRange(latestHistory);
-
-        _historiesCollection.Add(chatId, history);
-
-        return history;
-    }
-
-    private async Task Reinitialize(long chatId, ChatHistory history)
-    {
-        var dateTimeInstruction = GetCurrentTime();
-        var context = await contextService.GetContextByChatIdAsync(chatId);
-        var latestHistory = await messagesRepository.GetLatestHistoryByChatIdAsync(chatId);
-
+        if (history == null)
+            history = [];
+        else
+            isReinitializing = true;
+        
         history.AddSystemMessage(settings.SystemPrompt);
         history.AddSystemMessage(dateTimeInstruction);
         history.AddSystemMessages(context);
         history.AddRange(latestHistory);
+
+        if (!isReinitializing)
+            _historiesCollection.Add(chatId, history);
+
+        return history;
     }
 
     public void UpdateLocalTimeAsync(ChatHistory chatHistory)
@@ -78,7 +71,7 @@ public class HistoryService(IMessagesRepository messagesRepository, IContextServ
         if (history.Count(x => x.Role == AuthorRole.User) > settings.HistoryMaxLimit)
         {
             history.Clear();
-            await Reinitialize(chatId, history);
+            await Initialize(chatId, history);
         }
     }
 

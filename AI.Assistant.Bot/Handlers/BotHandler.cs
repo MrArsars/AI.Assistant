@@ -12,6 +12,7 @@ public class BotHandler(IChatService chatService, IHistoryService historyService
     public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update,
         CancellationToken cancellationToken)
     {
+        
         var msg = update.Message;
         if (msg?.Text is null) return;
 
