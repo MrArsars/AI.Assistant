@@ -1,7 +1,7 @@
 ﻿using AI.Assistant.Bot.Services.Interfaces;
 using Microsoft.Extensions.Hosting;
 
-namespace AI.Assistant.Bot.Services;
+namespace AI.Assistant.Bot.Services.BackgroundServices;
 
 public class ProactiveReminderService(
     IChatService chatService,
