@@ -1,23 +1,22 @@
 ﻿using Telegram.Bot.Exceptions;
 using AI.Assistant.Bot.Services.Interfaces;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace AI.Assistant.Bot.Handlers;
 
 public class BotHandler(IChatService chatService, IHistoryService historyService)
 {
 
-    public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update,
+    public async Task HandleMessageAsync(ITelegramBotClient botClient, Update update,
         CancellationToken cancellationToken)
     {
-        
         var msg = update.Message;
         if (msg?.Text is null) return;
 
-        var history = await historyService.GetHistoryByChatId(msg.Chat.Id);
-        await chatService.HandleIncomingMessageAsync(history, msg);
+        await historyService.AddMessageAsync(msg.Chat.Id, msg.Text, AuthorRole.User);
+        await chatService.HandleIncomingMessageAsync(msg.Chat.Id);
     }
 
     public async Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception,

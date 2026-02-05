@@ -1,13 +1,10 @@
 ﻿using AI.Assistant.Bot.Extensions;
-using AI.Assistant.Bot.Models;
-using AI.Assistant.Bot.Repositories.Interfaces;
 using AI.Assistant.Bot.Services.Interfaces;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Telegram.Bot.Types;
 
 namespace AI.Assistant.Bot.Services;
 
-public class HistoryService(IMessagesRepository messagesRepository, IContextService contextService, Settings settings)
+public class HistoryService(IContextService contextService, IMessagesService messagesService, Settings settings)
     : IHistoryService
 {
     private readonly Dictionary<long, ChatHistory> _historiesCollection = new();
@@ -16,7 +13,7 @@ public class HistoryService(IMessagesRepository messagesRepository, IContextServ
     {
         var dateTimeInstruction = GetCurrentTime();
         var context = await contextService.GetContextByChatIdAsync(chatId);
-        var latestHistory = await messagesRepository.GetLatestHistoryByChatIdAsync(chatId);
+        var latestHistory = await messagesService.GetLatestHistoryByChatIdAsync(chatId);
         var isReinitializing = false;
 
         if (history == null)
@@ -41,18 +38,11 @@ public class HistoryService(IMessagesRepository messagesRepository, IContextServ
         chatHistory[1].Content = dateTimeInstruction;
     }
 
-    public async Task SaveMessageAsync(Message message, ChatHistory history, AuthorRole role)
+    public async Task AddMessageAsync(long chatId, string text, AuthorRole role)
     {
-        history.AddMessage(role, message.Text!);
-        var messageModel = new MessageModel(message.Chat.Id, role.Label, message.Text!);
-        await messagesRepository.SaveMessageAsync(messageModel);
-    }
-
-    public async Task SaveMessageAsync(string text, long chatId, ChatHistory history, AuthorRole role)
-    {
+        var history = await GetHistoryByChatId(chatId);
         history.AddMessage(role, text);
-        var messageModel = new MessageModel(chatId, role.Label, text);
-        await messagesRepository.SaveMessageAsync(messageModel);
+        await messagesService.SaveToRepositoryAsync(text, chatId, role);
     }
 
     public async Task<ChatHistory> GetHistoryByChatId(long chatId)

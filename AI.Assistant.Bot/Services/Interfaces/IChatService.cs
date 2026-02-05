@@ -5,6 +5,6 @@ namespace AI.Assistant.Bot.Services.Interfaces;
 
 public interface IChatService
 {
-    Task HandleIncomingMessageAsync(ChatHistory history, Message message);  
+    Task HandleIncomingMessageAsync(long chatId);  
     Task SendMessageAsync(long chatId, string text);
 }

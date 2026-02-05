@@ -11,20 +11,21 @@ namespace AI.Assistant.Bot.Services;
 
 public class ChatService(
     IHistoryService historyService,
+    IMessagesService messagesService,
     Kernel kernel,
     IChatCompletionService chatCompletionService,
     GeminiPromptExecutionSettings geminiPromptExecutionSettings,
-    ITelegramBotClient telegramBotClient) : IChatService
+    ITelegramService telegramService) : IChatService
 {
-    public async Task HandleIncomingMessageAsync(ChatHistory history, Message message)
+    public async Task HandleIncomingMessageAsync(long chatId)
     {
+        var history = await historyService.GetHistoryByChatId(chatId);
         historyService.UpdateLocalTimeAsync(history);
-        await historyService.SaveMessageAsync(message, history, AuthorRole.User);
 
-        kernel.Data["chatId"] = message.Chat.Id;
+        kernel.Data["chatId"] = chatId;
         kernel.Data["history"] = history;
         
-        await historyService.TrimHistoryIfNeeded(history, message.Chat.Id);
+        await historyService.TrimHistoryIfNeeded(history, chatId);
 
         var result = await chatCompletionService.GetChatMessageContentAsync(
             history,
@@ -33,9 +34,7 @@ public class ChatService(
 
         var reply = result.Content ?? "Вибач, сталася помилка.";
         
-        await historyService.SaveMessageAsync(reply, message.Chat.Id, history, AuthorRole.Assistant);
-
-        await SendMessageAsync(message.Chat.Id, reply);
+        await SendMessageAsync(chatId, reply);
     }
 
     public static string LoadSystemInstruction()
@@ -51,6 +50,6 @@ public class ChatService(
     public async Task SendMessageAsync(long chatId, string text)
     {
         foreach (var chunk in text.ChunkBy())
-            await telegramBotClient.SendMessage(chatId, chunk);
+            await telegramService.SendMessageAsync(chatId, chunk);
     }
 }

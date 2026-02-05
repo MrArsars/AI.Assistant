@@ -35,13 +35,15 @@ var settings = new Settings() { HistoryMinLimit = historyMinLimit, HistoryMaxLim
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddSingleton(settings);
-builder.Services.AddSingleton<Supabase.Client>(supabase);
+builder.Services.AddSingleton(supabase);
 builder.Services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(config["TelegramBotToken"]!));
 builder.Services.AddSingleton<IChatService, ChatService>();
 builder.Services.AddSingleton<IMessagesRepository, MessagesRepository>();
 builder.Services.AddSingleton<IContextRepository, ContextRepository>();
 builder.Services.AddSingleton<IRemindersRepository, RemindersRepository>();
 builder.Services.AddSingleton<IHistoryService, HistoryService>();
+builder.Services.AddSingleton<ITelegramService, TelegramService>();
+builder.Services.AddSingleton<IMessagesService, MessagesService>();
 builder.Services.AddSingleton<IContextService, ContextService>();
 builder.Services.AddSingleton<IReminderService, ReminderService>();
 builder.Services.AddSingleton<ContextPlugin>();
@@ -84,7 +86,7 @@ var receiverOptions = new ReceiverOptions
 };
 
 botClient.StartReceiving(
-    updateHandler: botHandler.HandleUpdateAsync,
+    updateHandler: botHandler.HandleMessageAsync,
     errorHandler: botHandler.HandlePollingErrorAsync,
     receiverOptions: receiverOptions
 );
