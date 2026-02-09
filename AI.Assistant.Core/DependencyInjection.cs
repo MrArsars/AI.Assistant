@@ -22,7 +22,7 @@ public static class DependencyInjection
         services.AddTransient<IContextService, ContextService>();
         services.AddTransient<IReminderService, ReminderService>();
         services.AddTransient<IChatService, ChatService>();
-        services.AddTransient<ITelegramService, TelegramService>();
+        services.AddTransient<ISenderService, SenderService>();
         services.AddSingleton<IHistoryService, HistoryService>();
         
         return services;

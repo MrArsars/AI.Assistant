@@ -12,19 +12,21 @@ public class ReminderModel : BaseModel
     [Column("recurrence_rule")] public string? ReccurenceRule { get; set; }
     [Column("next_run_at")] public DateTime NextRunAt { get; set; }
     [Column("is_active")] public bool IsActive { get; set; }
+    [Column("source")] public string? MessageSource { get; set; }
     [Column("created_at")] public DateTime CreatedAt { get; set; }
 
     public ReminderModel()
     {
     }
 
-    public ReminderModel(long chatId, string message, string? recurrentRule, DateTime nextRunAt)
+    public ReminderModel(long chatId, string message, string? recurrentRule, DateTime nextRunAt, MessageSource source)
     {
         ChatId = chatId;
         Message = message;
         ReccurenceRule = recurrentRule;
         NextRunAt = nextRunAt;
         IsActive = true;
+        MessageSource = source.ToString();
         CreatedAt = DateTime.Now;
     }
 }

@@ -2,7 +2,6 @@
 using AI.Assistant.Bot.BackgroundServices;
 using AI.Assistant.Bot.Handlers;
 using AI.Assistant.Core;
-using AI.Assistant.Core.Services;
 using AI.Assistant.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

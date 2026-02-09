@@ -1,4 +1,5 @@
 ﻿using AI.Assistant.Core.Interfaces;
+using AI.Assistant.Core.Models;
 using Telegram.Bot.Exceptions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Telegram.Bot;
@@ -16,7 +17,7 @@ public class BotHandler(IChatService chatService, IHistoryService historyService
         if (msg?.Text is null) return;
 
         await historyService.AddMessageAsync(msg.Chat.Id, msg.Text, AuthorRole.User);
-        await chatService.HandleIncomingMessageAsync(msg.Chat.Id);
+        await chatService.HandleIncomingMessageAsync(msg.Chat.Id, MessageSource.Telegram);
     }
 
     public async Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception,

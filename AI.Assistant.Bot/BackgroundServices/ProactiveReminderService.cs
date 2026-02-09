@@ -1,4 +1,5 @@
-﻿using AI.Assistant.Core.Interfaces;
+﻿using AI.Assistant.Core.Extensions;
+using AI.Assistant.Core.Interfaces;
 using Microsoft.Extensions.Hosting;
 
 namespace AI.Assistant.Bot.BackgroundServices;
@@ -16,7 +17,7 @@ public class ProactiveReminderService(
 
             foreach (var reminder in reminders)
             {
-                await chatService.SendMessageAsync(reminder.ChatId, reminder.Message);
+                await chatService.SendMessageAsync(reminder.ChatId, reminder.Message, reminder.MessageSource.ToMessageSource());
                 if (reminder.Id.HasValue)
                     await reminderService.UpdateReminderAsync(reminder);
             }

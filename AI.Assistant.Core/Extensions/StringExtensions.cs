@@ -1,4 +1,6 @@
-﻿namespace AI.Assistant.Core.Extensions;
+﻿using AI.Assistant.Core.Models;
+
+namespace AI.Assistant.Core.Extensions;
 
 public static class StringExtensions
 {
@@ -10,5 +12,15 @@ public static class StringExtensions
         {
             yield return text.Substring(i, Math.Min(chunkSize, text.Length - i));
         }
+    }
+    
+    public static MessageSource ToMessageSource(this string? src)
+    {
+        return src switch
+        {
+            "Telegram" => MessageSource.Telegram,
+            "MobileApp" => MessageSource.MobileApp,
+            _ => throw new Exception("unhandled message source")
+        };
     }
 }
