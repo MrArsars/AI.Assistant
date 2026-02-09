@@ -1,5 +1,5 @@
-﻿using Telegram.Bot.Exceptions;
-using AI.Assistant.Bot.Services.Interfaces;
+﻿using AI.Assistant.Core.Interfaces;
+using Telegram.Bot.Exceptions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Telegram.Bot;
 using Telegram.Bot.Types;

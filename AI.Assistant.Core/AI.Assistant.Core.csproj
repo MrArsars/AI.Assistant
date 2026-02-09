@@ -1,11 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>Exe</OutputType>
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <UserSecretsId>83c9d9ee-9f3a-40f6-bbb7-f4ac3d94c062</UserSecretsId>
+        <UserSecretsId>8d68b526-0b32-4aa6-8532-5fee748f666d</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
@@ -14,13 +13,14 @@
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.1" />
       <PackageReference Include="Microsoft.SemanticKernel" Version="1.68.0" />
       <PackageReference Include="Microsoft.SemanticKernel.Connectors.Google" Version="1.68.0-alpha" />
-      <PackageReference Include="Supabase" Version="1.1.1" />
+      <PackageReference Include="Supabase.Postgrest" Version="4.0.3" />
       <PackageReference Include="Telegram.Bot" Version="22.8.1" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\AI.Assistant.Core\AI.Assistant.Core.csproj" />
-      <ProjectReference Include="..\AI.Assistant.Infrastructure\AI.Assistant.Infrastructure.csproj" />
+      <None Update="Prompts\system_instruction.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>

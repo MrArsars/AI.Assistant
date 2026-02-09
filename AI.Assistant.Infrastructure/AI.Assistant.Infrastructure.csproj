@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <UserSecretsId>79615c8d-a641-4aa6-a91d-d8ee2d0280a6</UserSecretsId>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Supabase" Version="1.1.1" />
+      <PackageReference Include="Supabase.Postgrest" Version="4.1.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\AI.Assistant.Core\AI.Assistant.Core.csproj" />
+    </ItemGroup>
+
+</Project>
