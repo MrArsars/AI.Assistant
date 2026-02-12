@@ -1,18 +1,19 @@
 ﻿using AI.Assistant.Core.Extensions;
 using AI.Assistant.Core.Interfaces;
+using AI.Assistant.Core.Providers;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace AI.Assistant.Core.Services;
 
-public class HistoryService(IContextService contextService, IMessagesService messagesService, Settings settings)
+public class HistoryService(IMessagesService messagesService, IContextProvider contextProvider , Settings settings)
     : IHistoryService
 {
     private readonly Dictionary<long, ChatHistory> _historiesCollection = new();
 
     public async Task<ChatHistory?> Initialize(long chatId, ChatHistory? history = null)
     {
-        var dateTimeInstruction = GetCurrentTime();
-        var context = await contextService.GetContextByChatIdAsync(chatId);
+        var dateTimeInstruction = DateTimeProvider.DateTimeNow;
+        var context = await contextProvider.GetContextByChatIdAsync(chatId);
         var latestHistory = await messagesService.GetLatestHistoryByChatIdAsync(chatId);
         var isReinitializing = false;
 
@@ -29,13 +30,6 @@ public class HistoryService(IContextService contextService, IMessagesService mes
         if (isReinitializing) return null;
         _historiesCollection.Add(chatId, history);
         return history;
-    }
-    
-
-    public void UpdateLocalTimeAsync(ChatHistory chatHistory)
-    {
-        var dateTimeInstruction = GetCurrentTime();
-        chatHistory[1].Content = dateTimeInstruction;
     }
 
     public async Task AddMessageAsync(long chatId, string text, AuthorRole role)
@@ -65,8 +59,5 @@ public class HistoryService(IContextService contextService, IMessagesService mes
         }
     }
 
-    private static string GetCurrentTime()
-    {
-        return $"Поточний час: {DateTime.Now}";
-    }
+    
 }

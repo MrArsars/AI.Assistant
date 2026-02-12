@@ -1,4 +1,5 @@
-﻿using AI.Assistant.Core.Interfaces;
+﻿using AI.Assistant.Application.Interfaces;
+using AI.Assistant.Core.Interfaces;
 using AI.Assistant.Core.Models;
 
 namespace AI.Assistant.Infrastructure.Repositories;

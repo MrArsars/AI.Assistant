@@ -14,15 +14,10 @@ public static class DependencyInjection
             HistoryMaxLimit = config.GetValue<int>("HistoryMessagesMaxLimit"),
             HistoryMinLimit = config.GetValue<int>("HistoryMessagesMinLimit"),
             TavilyApiKey = config.GetValue<string>("TavilyApiKey"),
-            SystemPrompt = ChatService.LoadSystemInstruction() 
         };
         services.AddSingleton(settings);
         
         services.AddTransient<IMessagesService, MessagesService>();
-        services.AddTransient<IContextService, ContextService>();
-        services.AddTransient<IReminderService, ReminderService>();
-        services.AddTransient<IChatService, ChatService>();
-        services.AddTransient<ISenderService, SenderService>();
         services.AddSingleton<IHistoryService, HistoryService>();
         
         return services;

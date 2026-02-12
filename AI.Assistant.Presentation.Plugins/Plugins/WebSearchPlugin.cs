@@ -4,7 +4,7 @@ using System.Text.Json;
 using AI.Assistant.Core;
 using Microsoft.SemanticKernel;
 
-namespace AI.Assistant.Infrastructure.Plugins;
+namespace AI.Assistant.Presentation.Plugins.Plugins;
 
 public class WebSearchPlugin(Settings settings)
 {

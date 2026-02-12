@@ -1,9 +1,10 @@
-﻿using AI.Assistant.Core.Interfaces;
+﻿using AI.Assistant.Application.Interfaces;
+using AI.Assistant.Core.Interfaces;
 using AI.Assistant.Core.Models;
 
 namespace AI.Assistant.Infrastructure.Repositories;
 
-public class ContextRepository(Supabase.Client client) : IContextRepository
+public class ContextRepository(Supabase.Client client) : IContextManager, IContextProvider
 {
     public async Task SaveContextAsync(long chatId, string info)
     {

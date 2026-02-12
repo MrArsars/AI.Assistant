@@ -1,6 +1,6 @@
 ﻿using AI.Assistant.Core.Models;
 
-namespace AI.Assistant.Core.Interfaces;
+namespace AI.Assistant.Application.Interfaces;
 
 public interface IRemindersRepository
 {

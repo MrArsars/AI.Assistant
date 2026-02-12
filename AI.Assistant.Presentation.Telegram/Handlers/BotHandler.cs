@@ -1,23 +1,28 @@
-﻿using AI.Assistant.Core.Interfaces;
+﻿using AI.Assistant.Application.Handlers;
+using AI.Assistant.Presentation.Bot.Extensions;
+using AI.Assistant.Core.Extensions;
+using AI.Assistant.Core.Interfaces;
 using AI.Assistant.Core.Models;
 using Telegram.Bot.Exceptions;
-using Microsoft.SemanticKernel.ChatCompletion;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
-namespace AI.Assistant.Bot.Handlers;
+namespace AI.Assistant.Presentation.Bot.Handlers;
 
-public class BotHandler(IChatService chatService, IHistoryService historyService)
+public class BotHandler(MessageHandler handler)
 {
 
     public async Task HandleMessageAsync(ITelegramBotClient botClient, Update update,
         CancellationToken cancellationToken)
     {
-        var msg = update.Message;
-        if (msg?.Text is null) return;
+        if(update.Message is null) throw new NullReferenceException(nameof(update.Message));
+        
+        var (chatId, text) = update.Message;
 
-        await historyService.AddMessageAsync(msg.Chat.Id, msg.Text, AuthorRole.User);
-        await chatService.HandleIncomingMessageAsync(msg.Chat.Id, MessageSource.Telegram);
+        var reply = await handler.HandleMessageAsync(chatId, text, MessageSource.Telegram);
+        
+        foreach (var chunk in reply.ChunkBy())
+            await botClient.SendMessage(chatId, chunk, cancellationToken: cancellationToken);
     }
 
     public async Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception,

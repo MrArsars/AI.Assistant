@@ -1,9 +1,10 @@
-﻿using AI.Assistant.Core.Interfaces;
+﻿using AI.Assistant.Application.Interfaces;
+using AI.Assistant.Core.Interfaces;
 using AI.Assistant.Core.Models;
 
-namespace AI.Assistant.Core.Services;
+namespace AI.Assistant.Application.Services;
 
-public class ReminderService(IRemindersRepository remindersRepository) : IReminderService
+public class ReminderService(IRemindersRepository remindersRepository)
 {
     public async Task CreateReminderAsync(long chatId, string message, string? recurrenceRule, DateTime nextRunAt, MessageSource source)
     {

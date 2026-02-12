@@ -1,7 +1,6 @@
 ﻿namespace AI.Assistant.Core.Interfaces;
 
-public interface IContextRepository
+public interface IContextProvider
 {
-    Task SaveContextAsync(long chatId, string info);
     Task<List<string>> GetContextByChatIdAsync(long chatId);
 }

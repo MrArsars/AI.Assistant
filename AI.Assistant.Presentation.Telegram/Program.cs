@@ -1,8 +1,11 @@
 ﻿using System.Text;
-using AI.Assistant.Bot.BackgroundServices;
-using AI.Assistant.Bot.Handlers;
+using AI.Assistant.Application;
+using AI.Assistant.Application.Handlers;
+using AI.Assistant.Presentation.Bot.BackgroundServices;
+using AI.Assistant.Presentation.Bot.Handlers;
 using AI.Assistant.Core;
 using AI.Assistant.Infrastructure;
+using AI.Assistant.Presentation.Plugins;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -18,6 +21,9 @@ config.AddUserSecrets<Program>();
 
 builder.Services.AddCoreServices(config);
 builder.Services.AddInfrastructure(config);
+builder.Services.AddApplicationServices();
+builder.Services.AddPlugins(config);
+builder.Services.AddTransient<MessageHandler>();
 
 builder.Services.AddSingleton<ITelegramBotClient>(
     new TelegramBotClient(config["TelegramBotToken"]!));

@@ -1,11 +1,11 @@
 using System.ComponentModel;
-using AI.Assistant.Core.Interfaces;
+using AI.Assistant.Application.Interfaces;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace AI.Assistant.Infrastructure.Plugins;
+namespace AI.Assistant.Presentation.Plugins.Plugins;
 
-public class ContextPlugin(IContextService contextService)
+public class ContextPlugin(IContextManager contextManager)
 {
     [KernelFunction("save_user_fact")]
     [Description("Saves information explicitly requested by the user.")]
@@ -23,7 +23,7 @@ public class ContextPlugin(IContextService contextService)
         if (kernel.Data.TryGetValue("chatId", out var objId) && objId is long chatId &&
             kernel.Data.TryGetValue("history", out var objHistory) && objHistory is ChatHistory history)
         {
-            await contextService.SaveContextAsync(chatId, history, info);
+            await contextManager.SaveContextAsync(chatId, info);
         }
     }
 }
