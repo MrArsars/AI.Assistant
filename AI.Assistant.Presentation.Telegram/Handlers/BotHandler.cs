@@ -1,13 +1,12 @@
 ﻿using AI.Assistant.Application.Handlers;
-using AI.Assistant.Presentation.Bot.Extensions;
 using AI.Assistant.Core.Extensions;
-using AI.Assistant.Core.Interfaces;
 using AI.Assistant.Core.Models;
-using Telegram.Bot.Exceptions;
+using AI.Assistant.Presentation.Telegram.Extensions;
 using Telegram.Bot;
+using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 
-namespace AI.Assistant.Presentation.Bot.Handlers;
+namespace AI.Assistant.Presentation.Telegram.Handlers;
 
 public class BotHandler(MessageHandler handler)
 {

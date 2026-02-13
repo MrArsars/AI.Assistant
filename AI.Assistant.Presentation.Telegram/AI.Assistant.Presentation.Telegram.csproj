@@ -6,7 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <UserSecretsId>83c9d9ee-9f3a-40f6-bbb7-f4ac3d94c062</UserSecretsId>
-        <RootNamespace>AI.Assistant.Presentation.Bot</RootNamespace>
+        <RootNamespace>AI.Assistant.Presentation.Telegram</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

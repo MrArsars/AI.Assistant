@@ -27,7 +27,8 @@ public class RemindersPlugin(ReminderService reminderService)
         if (!kernel.Data.TryGetValue("source", out var src) || src is not MessageSource source) return "Error";
         try
         {
-            await reminderService.CreateReminderAsync(chatId, message, recurrenceRule, nextRunAt, source);
+            var reminder = new ReminderModel(chatId, message, recurrenceRule, nextRunAt, source);
+            await reminderService.CreateReminderAsync(reminder);
             return "Success. Scheduled.";
         }
         catch (Exception e)

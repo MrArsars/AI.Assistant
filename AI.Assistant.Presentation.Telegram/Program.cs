@@ -1,11 +1,12 @@
 ﻿using System.Text;
 using AI.Assistant.Application;
 using AI.Assistant.Application.Handlers;
-using AI.Assistant.Presentation.Bot.BackgroundServices;
-using AI.Assistant.Presentation.Bot.Handlers;
 using AI.Assistant.Core;
 using AI.Assistant.Infrastructure;
+using AI.Assistant.Presentation.Telegram.Subscribers;
 using AI.Assistant.Presentation.Plugins;
+using AI.Assistant.Presentation.Telegram.BackgroundServices;
+using AI.Assistant.Presentation.Telegram.Handlers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -22,17 +23,22 @@ config.AddUserSecrets<Program>();
 builder.Services.AddCoreServices(config);
 builder.Services.AddInfrastructure(config);
 builder.Services.AddApplicationServices();
+
 builder.Services.AddPlugins(config);
+
 builder.Services.AddTransient<MessageHandler>();
+
 
 builder.Services.AddSingleton<ITelegramBotClient>(
     new TelegramBotClient(config["TelegramBotToken"]!));
 
 builder.Services.AddSingleton<BotHandler>();
-builder.Services.AddHostedService<ProactiveReminderService>();
+
+builder.Services.AddHostedService<ProactiveSubscriber>();
 builder.Services.AddHostedService<TelegramReceivingService>();
 
 using var host = builder.Build();
+
 
 Console.WriteLine($"{DateTime.Now:HH:mm:ss} | Бот запущений!");
 await host.RunAsync();

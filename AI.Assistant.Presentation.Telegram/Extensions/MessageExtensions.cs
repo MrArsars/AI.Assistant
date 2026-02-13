@@ -1,6 +1,6 @@
 ﻿using Telegram.Bot.Types;
 
-namespace AI.Assistant.Presentation.Bot.Extensions;
+namespace AI.Assistant.Presentation.Telegram.Extensions;
 
 public static class MessageExtensions
 {

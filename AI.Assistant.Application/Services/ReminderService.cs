@@ -6,10 +6,9 @@ namespace AI.Assistant.Application.Services;
 
 public class ReminderService(IRemindersRepository remindersRepository)
 {
-    public async Task CreateReminderAsync(long chatId, string message, string? recurrenceRule, DateTime nextRunAt, MessageSource source)
+    public async Task CreateReminderAsync(ReminderModel reminder)
     {
-        var newReminder = new ReminderModel(chatId, message, recurrenceRule, nextRunAt, source);
-        await remindersRepository.SaveReminderAsync(newReminder);
+        await remindersRepository.SaveReminderAsync(reminder);
     }
 
     public async Task<IEnumerable<ReminderModel>> GetNeededRemindersAsync()

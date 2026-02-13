@@ -1,9 +1,9 @@
-﻿using AI.Assistant.Presentation.Bot.Handlers;
+﻿using AI.Assistant.Presentation.Telegram.Handlers;
 using Microsoft.Extensions.Hosting;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 
-namespace AI.Assistant.Presentation.Bot.BackgroundServices;
+namespace AI.Assistant.Presentation.Telegram.BackgroundServices;
 
 public class TelegramReceivingService(BotHandler botHandler, ITelegramBotClient telegramBotClient) : BackgroundService
 {
