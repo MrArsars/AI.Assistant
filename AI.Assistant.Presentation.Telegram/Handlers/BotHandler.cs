@@ -10,16 +10,19 @@ namespace AI.Assistant.Presentation.Telegram.Handlers;
 
 public class BotHandler(MessageHandler handler)
 {
-
     public async Task HandleMessageAsync(ITelegramBotClient botClient, Update update,
         CancellationToken cancellationToken)
     {
-        if(update.Message is null) throw new NullReferenceException(nameof(update.Message));
-        
+        if (update.Message is null) throw new NullReferenceException(nameof(update.Message));
+
         var (chatId, text) = update.Message;
 
-        var reply = await handler.HandleMessageAsync(chatId, text, MessageSource.Telegram);
-        
+        var reply = text switch
+        {
+            "/start" => await handler.Introduce(chatId, MessageSource.Telegram),
+            _ => await handler.HandleMessageAsync(chatId, text, MessageSource.Telegram)
+        };
+
         foreach (var chunk in reply.ChunkBy())
             await botClient.SendMessage(chatId, chunk, cancellationToken: cancellationToken);
     }

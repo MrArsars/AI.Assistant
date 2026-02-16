@@ -2,10 +2,11 @@
 using AI.Assistant.Core.Interfaces;
 using AI.Assistant.Core.Providers;
 using Microsoft.SemanticKernel.ChatCompletion;
+using static AI.Assistant.Core.Prompts.Prompts;
 
 namespace AI.Assistant.Core.Services;
 
-public class HistoryService(IMessagesService messagesService, IContextProvider contextProvider , Settings settings)
+public class HistoryService(IMessagesService messagesService, IContextProvider contextProvider, Settings settings)
     : IHistoryService
 {
     private readonly Dictionary<long, ChatHistory> _historiesCollection = new();
@@ -21,8 +22,8 @@ public class HistoryService(IMessagesService messagesService, IContextProvider c
             history = [];
         else
             isReinitializing = true;
-        
-        history.AddSystemMessage(settings.SystemPrompt);
+
+        history.AddSystemMessage(SystemPrompt);
         history.AddSystemMessage(dateTimeInstruction);
         history.AddSystemMessages(context);
         history.AddRange(latestHistory);
@@ -58,6 +59,4 @@ public class HistoryService(IMessagesService messagesService, IContextProvider c
             await Initialize(chatId, history);
         }
     }
-
-    
 }
