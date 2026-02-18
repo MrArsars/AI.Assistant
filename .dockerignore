@@ -1,0 +1,17 @@
+# Build context excludes
+bin/
+obj/
+.git/
+.gitignore
+.dockerignore
+.idea/
+*.user
+out/
+.vs/
+.vscode/
+node_modules/
+*.log
+.DS_Store
+Thumbs.db
+.env.local
+appsettings.Development.json
