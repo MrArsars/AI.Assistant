@@ -19,10 +19,11 @@ public class RemindersRepository(
 
     public async Task<IEnumerable<ReminderModel>> GetNeededRemindersAsync()
     {
+        var localTime = DateTime.Now.ToLocalTime();
         return await _retryPolicy.ExecuteAsync(async () =>
         {
             var response = await client.From<ReminderModel>()
-                .Where(x => x.IsActive == true && x.NextRunAt <= DateTime.UtcNow)
+                .Where(x => x.IsActive == true && x.NextRunAt <= localTime)
                 .Get();
             return response.ResponseMessage is { IsSuccessStatusCode: false } ? [] : response.Models;
         });

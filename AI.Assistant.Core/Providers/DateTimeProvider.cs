@@ -2,5 +2,5 @@
 
 public static class DateTimeProvider
 {
-    public static string DateTimeNow => $"Поточний час: {DateTime.UtcNow}";
+    public static string DateTimeNow => $"Поточний час: {DateTime.Now.ToLocalTime()}";
 }
