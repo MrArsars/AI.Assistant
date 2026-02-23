@@ -21,7 +21,7 @@ public class ContextPlugin(IContextManager contextManager)
     private async Task ExecuteAsync(string info, Kernel kernel)
     {
         if (kernel.Data.TryGetValue("chatId", out var objId) && objId is long chatId &&
-            kernel.Data.TryGetValue("history", out var objHistory) && objHistory is ChatHistory history)
+            kernel.Data.TryGetValue("history", out var objHistory) && objHistory is ChatHistory)
         {
             await contextManager.SaveContextAsync(chatId, info);
         }

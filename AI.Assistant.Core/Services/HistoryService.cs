@@ -1,6 +1,5 @@
 ﻿using AI.Assistant.Core.Extensions;
 using AI.Assistant.Core.Interfaces;
-using AI.Assistant.Core.Providers;
 using Microsoft.SemanticKernel.ChatCompletion;
 using static AI.Assistant.Core.Prompts.Prompts;
 
@@ -13,7 +12,6 @@ public class HistoryService(IMessagesService messagesService, IContextProvider c
 
     public async Task<ChatHistory?> Initialize(long chatId, ChatHistory? history = null)
     {
-        var dateTimeInstruction = DateTimeProvider.DateTimeNow;
         var context = await contextProvider.GetContextByChatIdAsync(chatId);
         var latestHistory = await messagesService.GetLatestHistoryByChatIdAsync(chatId);
         var isReinitializing = false;
@@ -24,7 +22,6 @@ public class HistoryService(IMessagesService messagesService, IContextProvider c
             isReinitializing = true;
 
         history.AddSystemMessage(SystemPrompt);
-        history.AddSystemMessage(dateTimeInstruction);
         history.AddSystemMessages(context);
         history.AddRange(latestHistory);
 

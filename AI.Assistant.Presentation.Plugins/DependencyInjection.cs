@@ -18,6 +18,7 @@ public static class DependencyInjection
         services.AddTransient<ContextPlugin>();
         services.AddTransient<WebSearchPlugin>();
         services.AddTransient<RemindersPlugin>();
+        services.AddTransient<DateTimePlugin>();
         
         services.AddTransient<Kernel>(sp =>
         {
@@ -25,6 +26,7 @@ public static class DependencyInjection
             kernelBuilder.AddGoogleAIGeminiChatCompletion(config["GeminiModel"]!, config["GeminiApiToken"]!);
 
             kernelBuilder.Plugins.AddFromObject(sp.GetRequiredService<ContextPlugin>(), "Context");
+            kernelBuilder.Plugins.AddFromObject(sp.GetRequiredService<DateTimePlugin>(), "DateTime");
             kernelBuilder.Plugins.AddFromObject(sp.GetRequiredService<WebSearchPlugin>(), "WebSearch");
             kernelBuilder.Plugins.AddFromObject(sp.GetRequiredService<RemindersPlugin>(), "Reminders");
 
