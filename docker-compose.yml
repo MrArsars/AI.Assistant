@@ -1,0 +1,32 @@
+services:
+  ai-assistant:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai-assistant-bot
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Override or add specific variables here
+      - DOTNET_TieredCompilation=true
+      - DOTNET_TieredCompilationQuickJit=true
+    # Uncomment and configure if your app exposes ports
+    # ports:
+    #   - "5000:5000"
+    #   - "5001:5001"
+    volumes:
+      # Mount for configuration if needed
+      - ./config:/app/config:ro
+      # Mount for logs
+      - ./logs:/app/logs
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - ai-assistant-network
+
+networks:
+  ai-assistant-network:
+    driver: bridge
