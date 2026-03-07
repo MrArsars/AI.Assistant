@@ -21,6 +21,11 @@ public class MessageHandler(IHistoryService historyService, IAiService aiService
         return reply;
     }
 
+    public async Task AddProactiveToHistoryAsync(long chatId, string message)
+    {
+        await historyService.AddMessageAsync(chatId, message, AuthorRole.Assistant);
+    }
+
     public async Task<string> Introduce(long chatId, MessageSource source)
     {
         _ = await historyService.Initialize(chatId);

@@ -24,6 +24,9 @@ public class ContextRepository(Client client, IPolicyRegistry<string> policyRegi
             .From<ContextModel>()
             .Where(x => x.ChatId == chatId)
             .Get();
-        return await _retryPolicy.ExecuteAsync(async () => { return rows.Models.Select(x => x.Text).ToList(); });
+        return await _retryPolicy.ExecuteAsync(() =>
+        {
+            return Task.FromResult(rows.Models.Select(x => x.Text).ToList());
+        });
     }
 }
