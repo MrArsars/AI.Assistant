@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.Google;
 using Polly.Registry;
 using Supabase;
 
@@ -16,6 +17,11 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration config)
     {
+        services.AddSingleton(new GeminiPromptExecutionSettings()
+        {
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
+        });
+
         var registry = new PolicyRegistry { { "DbRetryPolicy", ResiliencePolicyFactory.GetDbRetryPolicy() } };
 
         services.AddSingleton<IPolicyRegistry<string>>(registry);
@@ -28,10 +34,18 @@ public static class DependencyInjection
             return client;
         });
 
+
         services.AddTransient<IMessagesRepository, MessagesRepository>();
         services.AddTransient<IContextManager, ContextRepository>();
         services.AddTransient<IContextProvider, ContextRepository>();
         services.AddTransient<IRemindersRepository, RemindersRepository>();
+
+        services.AddHttpClient<IVoiceTranscriptionService, VoiceTranscriptionService>(client =>
+        {
+            client.BaseAddress = new Uri("https://api.assemblyai.com/v2/");
+            var assemblyApiKey = config.GetValue<string>("AssemblyAiApiKey");
+            client.DefaultRequestHeaders.Add("authorization", assemblyApiKey);
+        });
 
         services.AddSingleton<IAiService, AiService>();
 

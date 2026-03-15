@@ -25,4 +25,8 @@
       <ProjectReference Include="..\AI.Assistant.Presentation.Plugins\AI.Assistant.Presentation.Plugins.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Folder Include="Files\"/>
+    </ItemGroup>
+
 </Project>

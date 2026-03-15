@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Google;
 
 namespace AI.Assistant.Presentation.Plugins;
 
@@ -10,16 +9,11 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddPlugins(this IServiceCollection services, IConfiguration config)
     {
-        services.AddSingleton(new GeminiPromptExecutionSettings()
-        {
-            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
-        });
-        
         services.AddTransient<ContextPlugin>();
         services.AddTransient<WebSearchPlugin>();
         services.AddTransient<RemindersPlugin>();
         services.AddTransient<DateTimePlugin>();
-        
+
         services.AddTransient<Kernel>(sp =>
         {
             var kernelBuilder = Kernel.CreateBuilder();

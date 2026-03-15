@@ -6,9 +6,13 @@ using static AI.Assistant.Core.Prompts.Prompts;
 
 namespace AI.Assistant.Application.Handlers;
 
-public class MessageHandler(IHistoryService historyService, IAiService aiService)
+public class MessageHandler(
+    IHistoryService historyService,
+    IAiService aiService,
+    IVoiceTranscriptionService voiceTranscriptionService
+)
 {
-    public async Task<string> HandleMessageAsync(long chatId, string message, MessageSource source)
+    public async Task<string> GenerateResponseAsync(long chatId, string message, MessageSource source)
     {
         var history = await historyService.GetHistoryByChatId(chatId);
         await historyService.TrimHistoryIfNeeded(history, chatId);
@@ -21,8 +25,16 @@ public class MessageHandler(IHistoryService historyService, IAiService aiService
         return reply;
     }
 
+    public async Task<string> TranscriptVoiceMessage(string filePath, CancellationToken cancellationToken)
+    {
+        var message = await voiceTranscriptionService.TranscriptVoiceMessage(filePath, cancellationToken);
+
+        return message;
+    }
+
     public async Task AddProactiveToHistoryAsync(long chatId, string message)
     {
+        await historyService.AddMessageAsync(chatId, SystemSeparator, AuthorRole.System);
         await historyService.AddMessageAsync(chatId, message, AuthorRole.Assistant);
     }
 

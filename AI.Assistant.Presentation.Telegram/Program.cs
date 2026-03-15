@@ -3,13 +3,13 @@ using AI.Assistant.Application;
 using AI.Assistant.Application.Handlers;
 using AI.Assistant.Core;
 using AI.Assistant.Infrastructure;
-using AI.Assistant.Presentation.Telegram.Subscribers;
 using AI.Assistant.Presentation.Plugins;
 using AI.Assistant.Presentation.Telegram.BackgroundServices;
 using AI.Assistant.Presentation.Telegram.Handlers;
+using AI.Assistant.Presentation.Telegram.Subscribers;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Configuration;
 using Telegram.Bot;
 
 Console.OutputEncoding = Encoding.UTF8;
@@ -26,8 +26,8 @@ builder.Services.AddApplicationServices();
 
 builder.Services.AddPlugins(config);
 
+builder.Services.AddScoped<HttpClient>();
 builder.Services.AddTransient<MessageHandler>();
-
 
 builder.Services.AddSingleton<ITelegramBotClient>(
     new TelegramBotClient(config["TelegramBotToken"]!));
