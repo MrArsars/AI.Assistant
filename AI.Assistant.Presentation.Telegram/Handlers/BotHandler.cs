@@ -57,7 +57,7 @@ public class BotHandler(MessageHandler handler)
     {
         var voiceMessage = await botClient.GetFile(voiceId, cancellationToken);
 
-        var directoryPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Files");
+        var directoryPath = Path.GetTempPath();
         var filePath = Path.Combine(directoryPath, "voice.oga");
 
         Directory.CreateDirectory(directoryPath);
@@ -69,6 +69,11 @@ public class BotHandler(MessageHandler handler)
         }
 
         return filePath;
+    }
+
+    private async Task HandleTextMessageAsync(ITelegramBotClient botClient, Message message)
+    {
+        
     }
 
     public async Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception,
