@@ -1,5 +1,6 @@
 ﻿using AI.Assistant.Application.Interfaces;
 using AI.Assistant.Core.Interfaces;
+using AI.Assistant.Infrastructure.Agents;
 using AI.Assistant.Infrastructure.Repositories;
 using AI.Assistant.Infrastructure.Resilience;
 using AI.Assistant.Infrastructure.Services;
@@ -19,7 +20,7 @@ public static class DependencyInjection
     {
         services.AddSingleton(new GeminiPromptExecutionSettings()
         {
-            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions,
         });
 
         var registry = new PolicyRegistry { { "DbRetryPolicy", ResiliencePolicyFactory.GetDbRetryPolicy() } };
@@ -48,6 +49,7 @@ public static class DependencyInjection
         });
 
         services.AddSingleton<IAiService, AiService>();
+        services.AddSingleton<ISanitizerAgent, SanitizerAgent>();
 
         services.AddTransient<IChatCompletionService>(sp =>
             sp.GetRequiredService<Kernel>().GetRequiredService<IChatCompletionService>());

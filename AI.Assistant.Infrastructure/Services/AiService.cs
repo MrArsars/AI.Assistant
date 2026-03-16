@@ -17,12 +17,19 @@ public class AiService(
         kernel.Data["history"] = history;
         kernel.Data["source"] = source;
 
-        var result = await chatCompletionService.GetChatMessageContentAsync(
-            history,
-            kernel: kernel,
-            executionSettings: geminiPromptExecutionSettings);
-
-        var reply = result.Content ?? "Вибач, сталася помилка.";
-        return reply;
+        try
+        {
+            var result = await chatCompletionService.GetChatMessageContentAsync(
+                history,
+                kernel: kernel,
+                executionSettings: geminiPromptExecutionSettings);
+            var reply = result.Content ?? "Вибач, сталася помилка.";
+            return reply;
+        }
+        catch (HttpOperationException ex)
+        {
+            Console.WriteLine(ex.ResponseContent);
+            throw;
+        }
     }
 }

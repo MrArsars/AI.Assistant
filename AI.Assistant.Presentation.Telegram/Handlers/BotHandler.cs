@@ -1,4 +1,5 @@
 ﻿using AI.Assistant.Application.Handlers;
+using AI.Assistant.Application.Interfaces;
 using AI.Assistant.Core.Extensions;
 using AI.Assistant.Core.Models;
 using AI.Assistant.Presentation.Telegram.Extensions;
@@ -8,7 +9,7 @@ using Telegram.Bot.Types;
 
 namespace AI.Assistant.Presentation.Telegram.Handlers;
 
-public class BotHandler(MessageHandler handler)
+public class BotHandler(MessageHandler handler, ISanitizerAgent sanitizerAgent)
 {
     public async Task HandleMessageAsync(ITelegramBotClient botClient, Update update,
         CancellationToken cancellationToken)
@@ -28,10 +29,12 @@ public class BotHandler(MessageHandler handler)
 
         if (text == null) return;
 
+        var sanitizedMessage = await sanitizerAgent.SanitizeAsync(text, "Text", cancellationToken);
+
         var reply = text switch
         {
             "/start" => await handler.Introduce(chatId, MessageSource.Telegram),
-            _ => await handler.GenerateResponseAsync(chatId, text, MessageSource.Telegram)
+            _ => await handler.GenerateResponseAsync(chatId, sanitizedMessage.Content, MessageSource.Telegram)
         };
 
         foreach (var chunk in reply.ChunkBy())
@@ -46,7 +49,9 @@ public class BotHandler(MessageHandler handler)
         var filePath = await DownloadVoiceMessage(voiceId, botClient, cancellationToken);
         var message = await handler.TranscriptVoiceMessage(filePath, cancellationToken);
 
-        var reply = await handler.GenerateResponseAsync(chatId, message, MessageSource.Telegram);
+        var sanitizedMessage = await sanitizerAgent.SanitizeAsync(message, "Voice", cancellationToken);
+
+        var reply = await handler.GenerateResponseAsync(chatId, sanitizedMessage.Content, MessageSource.Telegram);
 
         foreach (var chunk in reply.ChunkBy())
             await botClient.SendMessage(chatId, chunk, cancellationToken: cancellationToken);
@@ -69,11 +74,6 @@ public class BotHandler(MessageHandler handler)
         }
 
         return filePath;
-    }
-
-    private async Task HandleTextMessageAsync(ITelegramBotClient botClient, Message message)
-    {
-        
     }
 
     public async Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception,
