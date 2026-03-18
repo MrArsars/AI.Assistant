@@ -46,8 +46,8 @@ public class BotHandler(MessageHandler handler, ISanitizerAgent sanitizerAgent)
         var (chatId, _, voiceId) = msg;
         if (voiceId == null) return;
 
-        var filePath = await DownloadVoiceMessage(voiceId, botClient, cancellationToken);
-        var message = await handler.TranscriptVoiceMessage(filePath, cancellationToken);
+        var memoryStream = await GetFileStream(voiceId, botClient, cancellationToken);
+        var message = await handler.TranscriptVoiceMessage(memoryStream, cancellationToken);
 
         var sanitizedMessage = await sanitizerAgent.SanitizeAsync(message, "Voice", cancellationToken);
 
@@ -57,23 +57,18 @@ public class BotHandler(MessageHandler handler, ISanitizerAgent sanitizerAgent)
             await botClient.SendMessage(chatId, chunk, cancellationToken: cancellationToken);
     }
 
-    private async Task<string> DownloadVoiceMessage(string voiceId, ITelegramBotClient botClient,
+    private async Task<Stream> GetFileStream(string voiceId, ITelegramBotClient botClient,
         CancellationToken cancellationToken)
     {
         var voiceMessage = await botClient.GetFile(voiceId, cancellationToken);
 
-        var directoryPath = Path.GetTempPath();
-        var filePath = Path.Combine(directoryPath, "voice.oga");
+        if (voiceMessage.FilePath == null) throw new Exception("File is not existing");
 
-        Directory.CreateDirectory(directoryPath);
+        var memoryStream = new MemoryStream();
+        await botClient.DownloadFile(voiceMessage.FilePath, memoryStream, cancellationToken);
+        memoryStream.Position = 0;
 
-        await using (FileStream fileStream = new(filePath, FileMode.Create))
-        {
-            if (voiceMessage.FilePath != null)
-                await botClient.DownloadFile(voiceMessage.FilePath, fileStream, cancellationToken);
-        }
-
-        return filePath;
+        return memoryStream;
     }
 
     public async Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception,

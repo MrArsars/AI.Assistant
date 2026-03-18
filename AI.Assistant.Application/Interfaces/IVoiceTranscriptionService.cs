@@ -2,5 +2,5 @@
 
 public interface IVoiceTranscriptionService
 {
-    Task<string> TranscriptVoiceMessage(string filePath, CancellationToken cancellationToken);
+    Task<string> TranscriptVoiceMessage(Stream memoryStream, CancellationToken cancellationToken);
 }

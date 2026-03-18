@@ -25,9 +25,9 @@ public class MessageHandler(
         return reply;
     }
 
-    public async Task<string> TranscriptVoiceMessage(string filePath, CancellationToken cancellationToken)
+    public async Task<string> TranscriptVoiceMessage(Stream memoryStream, CancellationToken cancellationToken)
     {
-        var message = await voiceTranscriptionService.TranscriptVoiceMessage(filePath, cancellationToken);
+        var message = await voiceTranscriptionService.TranscriptVoiceMessage(memoryStream, cancellationToken);
 
         return message;
     }

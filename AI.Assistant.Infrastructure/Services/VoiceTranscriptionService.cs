@@ -14,18 +14,17 @@ public class VoiceTranscriptionService(HttpClient httpClient) : IVoiceTranscript
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
     };
 
-    public async Task<string> TranscriptVoiceMessage(string filePath, CancellationToken ct = default)
+    public async Task<string> TranscriptVoiceMessage(Stream memoryStream, CancellationToken ct = default)
     {
-        var audioUrl = await UploadFile(filePath, ct);
+        var audioUrl = await UploadFile(memoryStream, ct);
         var transcript = await GenerateTranscript(audioUrl, ct);
 
         return await PollForTranscriptResult(transcript.Id, ct);
     }
 
-    private async Task<string> UploadFile(string filePath, CancellationToken ct)
+    private async Task<string> UploadFile(Stream memoryStream, CancellationToken ct)
     {
-        await using var fileStream = File.OpenRead(filePath);
-        using var fileContent = new StreamContent(fileStream);
+        using var fileContent = new StreamContent(memoryStream);
         fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
 
         using var response = await httpClient.PostAsync("upload", fileContent, ct);
