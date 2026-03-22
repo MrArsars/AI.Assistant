@@ -30,11 +30,11 @@ public class HistoryService(IMessagesService messagesService, IContextProvider c
         return history;
     }
 
-    public async Task AddMessageAsync(long chatId, string text, AuthorRole role)
+    public async Task AddMessageAsync(long chatId, string text, AuthorRole role, float[]? embedding = null)
     {
         var history = await GetHistoryByChatId(chatId);
         history.AddMessage(role, text);
-        await messagesService.SaveToRepositoryAsync(text, chatId, role);
+        await messagesService.SaveToRepositoryAsync(text, chatId, role, embedding);
     }
 
     public async Task<ChatHistory> GetHistoryByChatId(long chatId)

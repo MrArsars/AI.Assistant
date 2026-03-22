@@ -3,7 +3,7 @@ using Polly;
 
 namespace AI.Assistant.Infrastructure.Resilience;
 
-public class ResiliencePolicyFactory
+public static class ResiliencePolicyFactory
 {
     public static IAsyncPolicy GetDbRetryPolicy()
     {

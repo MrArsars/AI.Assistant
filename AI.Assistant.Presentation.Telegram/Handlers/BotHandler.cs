@@ -2,7 +2,6 @@
 using AI.Assistant.Application.Interfaces;
 using AI.Assistant.Core.Extensions;
 using AI.Assistant.Core.Models;
-using AI.Assistant.Presentation.Telegram.Extensions;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
@@ -11,64 +10,65 @@ namespace AI.Assistant.Presentation.Telegram.Handlers;
 
 public class BotHandler(MessageHandler handler, ISanitizerAgent sanitizerAgent)
 {
-    public async Task HandleMessageAsync(ITelegramBotClient botClient, Update update,
-        CancellationToken cancellationToken)
+    public async Task HandleMessageAsync(ITelegramBotClient botClient, Update update, CancellationToken ct)
     {
-        if (update.Message is null) throw new NullReferenceException(nameof(update.Message));
+        if (update.Message is not { } message) return;
 
-        if (update.Message.Text is not null)
-            await HandleTextAsync(update.Message, botClient, cancellationToken);
-
-        if (update.Message.Voice is not null)
-            await HandleVoiceAsync(update.Message, botClient, cancellationToken);
-    }
-
-    private async Task HandleTextAsync(Message msg, ITelegramBotClient botClient, CancellationToken cancellationToken)
-    {
-        var (chatId, text, _) = msg;
-
-        if (text == null) return;
-
-        var sanitizedMessage = await sanitizerAgent.SanitizeAsync(text, "Text", cancellationToken);
-
-        var reply = text switch
+        var rawText = message switch
         {
-            "/start" => await handler.Introduce(chatId, MessageSource.Telegram),
-            _ => await handler.GenerateResponseAsync(chatId, sanitizedMessage.Content, MessageSource.Telegram)
+            { Text: not null } => message.Text,
+            { Voice: not null } => await GetTranscriptAsync(message.Voice.FileId, botClient, ct),
+            _ => throw new Exception("Error: empty message")
         };
 
-        foreach (var chunk in reply.ChunkBy())
-            await botClient.SendMessage(chatId, chunk, cancellationToken: cancellationToken);
+        if (rawText.StartsWith('/'))
+        {
+            await HandleCommandAsync(message.Chat.Id, rawText, botClient, ct);
+            return;
+        }
+
+        await ProcessAiFlowAsync(message.Chat.Id, rawText, message.Voice != null ? "Voice" : "Text", botClient, ct);
     }
 
-    private async Task HandleVoiceAsync(Message msg, ITelegramBotClient botClient, CancellationToken cancellationToken)
+    private async Task ProcessAiFlowAsync(long chatId, string rawText, string type, ITelegramBotClient botClient,
+        CancellationToken ct)
     {
-        var (chatId, _, voiceId) = msg;
-        if (voiceId == null) return;
+        var sanitized = await sanitizerAgent.SanitizeAsync(rawText, type, ct);
+        var reply = await handler.GenerateResponseAsync(chatId, sanitized.Content, MessageSource.Telegram, ct);
 
-        var memoryStream = await GetFileStream(voiceId, botClient, cancellationToken);
-        var message = await handler.TranscriptVoiceMessage(memoryStream, cancellationToken);
-
-        var sanitizedMessage = await sanitizerAgent.SanitizeAsync(message, "Voice", cancellationToken);
-
-        var reply = await handler.GenerateResponseAsync(chatId, sanitizedMessage.Content, MessageSource.Telegram);
-
-        foreach (var chunk in reply.ChunkBy())
-            await botClient.SendMessage(chatId, chunk, cancellationToken: cancellationToken);
+        await SendLargeMessageAsync(chatId, reply, botClient, ct);
     }
 
-    private async Task<Stream> GetFileStream(string voiceId, ITelegramBotClient botClient,
-        CancellationToken cancellationToken)
+    private async Task HandleCommandAsync(long chatId, string command, ITelegramBotClient botClient,
+        CancellationToken ct)
     {
-        var voiceMessage = await botClient.GetFile(voiceId, cancellationToken);
+        var response = command switch
+        {
+            "/start" => await handler.Introduce(chatId, MessageSource.Telegram),
+            _ => "Невідома команда"
+        };
+        await botClient.SendMessage(chatId, response, cancellationToken: ct);
+    }
 
-        if (voiceMessage.FilePath == null) throw new Exception("File is not existing");
+    private async Task<string> GetTranscriptAsync(string voiceId, ITelegramBotClient botClient, CancellationToken ct)
+    {
+        var file = await botClient.GetFile(voiceId, ct);
+        if (file.FilePath == null) return string.Empty;
 
-        var memoryStream = new MemoryStream();
-        await botClient.DownloadFile(voiceMessage.FilePath, memoryStream, cancellationToken);
-        memoryStream.Position = 0;
+        using var ms = new MemoryStream();
+        await botClient.DownloadFile(file.FilePath, ms, ct);
+        ms.Position = 0;
 
-        return memoryStream;
+        return await handler.TranscriptVoiceMessage(ms, ct);
+    }
+
+    private async Task SendLargeMessageAsync(long chatId, string text, ITelegramBotClient botClient,
+        CancellationToken ct)
+    {
+        foreach (var chunk in text.ChunkBy())
+        {
+            await botClient.SendMessage(chatId, chunk, cancellationToken: ct);
+        }
     }
 
     public async Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception,

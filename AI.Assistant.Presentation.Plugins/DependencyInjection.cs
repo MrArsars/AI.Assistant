@@ -14,10 +14,14 @@ public static class DependencyInjection
         services.AddTransient<RemindersPlugin>();
         services.AddTransient<DateTimePlugin>();
 
+
         services.AddTransient<Kernel>(sp =>
         {
             var kernelBuilder = Kernel.CreateBuilder();
-            kernelBuilder.AddGoogleAIGeminiChatCompletion(config["GeminiModel"]!, config["GeminiApiToken"]!);
+            var apiKey = config["GeminiApiToken"]!;
+
+            kernelBuilder.AddGoogleAIGeminiChatCompletion(config["GeminiModel"]!, apiKey);
+            kernelBuilder.AddGoogleAIEmbeddingGenerator("gemini-embedding-001", apiKey);
 
             kernelBuilder.Plugins.AddFromObject(sp.GetRequiredService<ContextPlugin>(), "Context");
             kernelBuilder.Plugins.AddFromObject(sp.GetRequiredService<DateTimePlugin>(), "DateTime");

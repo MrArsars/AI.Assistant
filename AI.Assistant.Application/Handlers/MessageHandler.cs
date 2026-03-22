@@ -9,18 +9,22 @@ namespace AI.Assistant.Application.Handlers;
 public class MessageHandler(
     IHistoryService historyService,
     IAiService aiService,
-    IVoiceTranscriptionService voiceTranscriptionService
+    IVoiceTranscriptionService voiceTranscriptionService,
+    IEmbeddingService embeddingService
 )
 {
-    public async Task<string> GenerateResponseAsync(long chatId, string message, MessageSource source)
+    public async Task<string> GenerateResponseAsync(long chatId, string message, MessageSource source,
+        CancellationToken ct)
     {
         var history = await historyService.GetHistoryByChatId(chatId);
         await historyService.TrimHistoryIfNeeded(history, chatId);
-        await historyService.AddMessageAsync(chatId, message, AuthorRole.User);
+        var embedding = await embeddingService.GetEmbeddingFromTextAsync(message, ct);
+        await historyService.AddMessageAsync(chatId, message, AuthorRole.User, embedding);
 
         var reply = await aiService.GetAiResponse(history, chatId, source);
 
-        await historyService.AddMessageAsync(chatId, reply, AuthorRole.Assistant);
+        embedding = await embeddingService.GetEmbeddingFromTextAsync(message, ct);
+        await historyService.AddMessageAsync(chatId, reply, AuthorRole.Assistant, embedding);
 
         return reply;
     }
@@ -28,7 +32,6 @@ public class MessageHandler(
     public async Task<string> TranscriptVoiceMessage(Stream memoryStream, CancellationToken cancellationToken)
     {
         var message = await voiceTranscriptionService.TranscriptVoiceMessage(memoryStream, cancellationToken);
-
         return message;
     }
 

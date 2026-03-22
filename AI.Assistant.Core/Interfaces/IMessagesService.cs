@@ -4,6 +4,6 @@ namespace AI.Assistant.Core.Interfaces;
 
 public interface IMessagesService
 {
-    Task SaveToRepositoryAsync(string text, long chatId, AuthorRole role);
+    Task SaveToRepositoryAsync(string text, long chatId, AuthorRole role, float[]? embedding);
     Task<ChatHistory> GetLatestHistoryByChatIdAsync(long chatId, bool useLimit = true);
 }

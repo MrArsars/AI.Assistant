@@ -6,12 +6,12 @@ namespace AI.Assistant.Core.Services;
 
 public class MessagesService(IMessagesRepository messagesRepository) : IMessagesService
 {
-    public async Task SaveToRepositoryAsync(string text, long chatId, AuthorRole role)
+    public async Task SaveToRepositoryAsync(string text, long chatId, AuthorRole role, float[]? embedding)
     {
-        var messageModel = new MessageModel(chatId, role.Label, text);
+        var messageModel = new MessageModel(chatId, role.Label, text, embedding);
         await messagesRepository.SaveMessageAsync(messageModel);
     }
-    
+
     public async Task<ChatHistory> GetLatestHistoryByChatIdAsync(long chatId, bool useLimit = true)
     {
         var result = await messagesRepository.GetLatestHistoryByChatIdAsync(chatId, useLimit);

@@ -20,7 +20,7 @@ public static class DependencyInjection
     {
         services.AddSingleton(new GeminiPromptExecutionSettings()
         {
-            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions,
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
         });
 
         var registry = new PolicyRegistry { { "DbRetryPolicy", ResiliencePolicyFactory.GetDbRetryPolicy() } };
@@ -50,6 +50,8 @@ public static class DependencyInjection
 
         services.AddSingleton<IAiService, AiService>();
         services.AddSingleton<ISanitizerAgent, SanitizerAgent>();
+
+        services.AddScoped<IEmbeddingService, EmbeddingService>();
 
         services.AddTransient<IChatCompletionService>(sp =>
             sp.GetRequiredService<Kernel>().GetRequiredService<IChatCompletionService>());
