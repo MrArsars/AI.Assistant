@@ -1,10 +1,11 @@
+﻿using AI.Assistant.Core.Models;
 using Supabase.Postgrest.Attributes;
 using Supabase.Postgrest.Models;
 
-namespace AI.Assistant.Core.Models;
+namespace AI.Assistant.Infrastructure.Persistence.Models;
 
 [Table("Reminders")]
-public class ReminderModel : BaseModel
+public class ReminderDto : BaseModel
 {
     [PrimaryKey("id", false)] public Guid? Id { get; set; }
     [Column("chat_id")] public long ChatId { get; set; }
@@ -15,11 +16,11 @@ public class ReminderModel : BaseModel
     [Column("source")] public string? MessageSource { get; set; }
     [Column("created_at")] public DateTime CreatedAt { get; set; }
 
-    public ReminderModel()
+    public ReminderDto()
     {
     }
 
-    public ReminderModel(long chatId, string message, string? recurrentRule, DateTime nextRunAt, MessageSource source)
+    public ReminderDto(long chatId, string message, string? recurrentRule, DateTime nextRunAt, MessageSource source)
     {
         ChatId = chatId;
         Message = message;

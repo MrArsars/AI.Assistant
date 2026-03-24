@@ -1,12 +1,11 @@
 ﻿using System.ComponentModel;
-using AI.Assistant.Application.Services;
-using AI.Assistant.Core.Extensions;
+using AI.Assistant.Application.Interfaces;
 using AI.Assistant.Core.Models;
 using Microsoft.SemanticKernel;
 
 namespace AI.Assistant.Presentation.Plugins.Plugins;
 
-public class RemindersPlugin(ReminderService reminderService)
+public class RemindersPlugin(IReminderService reminderService)
 {
     [KernelFunction("create_reminder")]
     [Description(
@@ -27,7 +26,7 @@ public class RemindersPlugin(ReminderService reminderService)
         if (!kernel.Data.TryGetValue("source", out var src) || src is not MessageSource source) return "Error";
         try
         {
-            var reminder = new ReminderModel(chatId, message, recurrenceRule, nextRunAt, source);
+            var reminder = new Reminder(chatId, message, recurrenceRule, nextRunAt, source);
             await reminderService.CreateReminderAsync(reminder);
             return "Success. Scheduled.";
         }

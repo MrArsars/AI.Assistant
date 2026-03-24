@@ -2,10 +2,10 @@
 using Supabase.Postgrest.Attributes;
 using Supabase.Postgrest.Models;
 
-namespace AI.Assistant.Core.Models;
+namespace AI.Assistant.Infrastructure.Persistence.Models;
 
 [Table("Messages")]
-public class MessageModel : BaseModel
+public class MessageDto : BaseModel
 {
     [PrimaryKey("id", false)] public Guid? Id { get; set; }
     [Column("chat_id")] public long ChatId { get; set; }
@@ -17,11 +17,11 @@ public class MessageModel : BaseModel
     [JsonConverter(typeof(VectorConverter))]
     public float[]? Embedding { get; set; }
 
-    public MessageModel()
+    public MessageDto()
     {
     }
 
-    public MessageModel(long chatId, string role, string text, float[]? embedding)
+    public MessageDto(long chatId, string role, string text, float[]? embedding)
     {
         ChatId = chatId;
         Role = role;

@@ -8,7 +8,7 @@ public class MessagesService(IMessagesRepository messagesRepository) : IMessages
 {
     public async Task SaveToRepositoryAsync(string text, long chatId, AuthorRole role, float[]? embedding)
     {
-        var messageModel = new MessageModel(chatId, role.Label, text, embedding);
+        var messageModel = new Message(chatId, role.Label, text, embedding);
         await messagesRepository.SaveMessageAsync(messageModel);
     }
 

@@ -6,6 +6,8 @@ using AI.Assistant.Infrastructure;
 using AI.Assistant.Presentation.Plugins;
 using AI.Assistant.Presentation.Telegram.BackgroundServices;
 using AI.Assistant.Presentation.Telegram.Handlers;
+using AI.Assistant.Presentation.Telegram.Interfaces;
+using AI.Assistant.Presentation.Telegram.Services;
 using AI.Assistant.Presentation.Telegram.Subscribers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,6 +35,7 @@ builder.Services.AddSingleton<ITelegramBotClient>(
     new TelegramBotClient(config["TelegramBotToken"]!));
 
 builder.Services.AddSingleton<BotHandler>();
+builder.Services.AddTransient<IFileService, FileService>();
 
 builder.Services.AddHostedService<ProactiveSubscriber>();
 builder.Services.AddHostedService<TelegramReceivingService>();

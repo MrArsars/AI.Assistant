@@ -35,7 +35,7 @@ public class VoiceTranscriptionService(HttpClient httpClient) : IVoiceTranscript
                ?? throw new Exception("Failed to get upload URL");
     }
 
-    private async Task<TranscriptModel> GenerateTranscript(string audioUrl, CancellationToken ct)
+    private async Task<Transcript> GenerateTranscript(string audioUrl, CancellationToken ct)
     {
         var requestBody = new
         {
@@ -58,7 +58,7 @@ public class VoiceTranscriptionService(HttpClient httpClient) : IVoiceTranscript
             throw new Exception($"AssemblyAI Post Error: {error}");
         }
 
-        return await response.Content.ReadFromJsonAsync<TranscriptModel>(JsonOptions, ct)
+        return await response.Content.ReadFromJsonAsync<Transcript>(JsonOptions, ct)
                ?? throw new Exception("Failed to deserialize transcript model");
     }
 
@@ -72,7 +72,7 @@ public class VoiceTranscriptionService(HttpClient httpClient) : IVoiceTranscript
             ct.ThrowIfCancellationRequested();
 
             var response = await httpClient.GetAsync(endpoint, ct);
-            var result = await response.Content.ReadFromJsonAsync<TranscriptModel>(JsonOptions, ct);
+            var result = await response.Content.ReadFromJsonAsync<Transcript>(JsonOptions, ct);
 
             switch (result?.Status)
             {

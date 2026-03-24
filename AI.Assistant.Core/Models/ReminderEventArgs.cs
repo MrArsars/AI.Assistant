@@ -2,9 +2,9 @@ using AI.Assistant.Core.Extensions;
 
 namespace AI.Assistant.Core.Models;
 
-public class ReminderEventArgs(ReminderModel reminder) : EventArgs
+public class ReminderEventArgs(Reminder reminder) : EventArgs
 {
-    public ReminderModel Reminder { get; } = reminder;
+    public Reminder Reminder { get; } = reminder;
 
     public void Deconstruct(out long chatId, out string reminder, out MessageSource source)
     {

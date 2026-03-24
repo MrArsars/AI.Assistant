@@ -2,13 +2,14 @@
 using AI.Assistant.Application.Interfaces;
 using AI.Assistant.Core.Extensions;
 using AI.Assistant.Core.Models;
+using AI.Assistant.Presentation.Telegram.Interfaces;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 
 namespace AI.Assistant.Presentation.Telegram.Handlers;
 
-public class BotHandler(MessageHandler handler, ISanitizerAgent sanitizerAgent)
+public class BotHandler(MessageHandler handler, ISanitizerAgent sanitizerAgent, IFileService fileService)
 {
     public async Task HandleMessageAsync(ITelegramBotClient botClient, Update update, CancellationToken ct)
     {
@@ -52,13 +53,8 @@ public class BotHandler(MessageHandler handler, ISanitizerAgent sanitizerAgent)
 
     private async Task<string> GetTranscriptAsync(string voiceId, ITelegramBotClient botClient, CancellationToken ct)
     {
-        var file = await botClient.GetFile(voiceId, ct);
-        if (file.FilePath == null) return string.Empty;
-
-        using var ms = new MemoryStream();
-        await botClient.DownloadFile(file.FilePath, ms, ct);
-        ms.Position = 0;
-
+        var ms = await fileService.GetFileStreamAsync(voiceId, botClient, ct);
+        if (ms is null) throw new Exception("File not found");
         return await handler.TranscriptVoiceMessage(ms, ct);
     }
 

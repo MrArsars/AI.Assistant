@@ -2,7 +2,7 @@
 
 namespace AI.Assistant.Core.Models;
 
-public class TranscriptModel
+public class Transcript
 {
     public string Id { get; set; }
     public string Status { get; set; }

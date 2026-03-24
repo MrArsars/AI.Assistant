@@ -1,6 +1,7 @@
 ﻿using AI.Assistant.Application.Interfaces;
 using AI.Assistant.Core.Interfaces;
 using AI.Assistant.Infrastructure.Agents;
+using AI.Assistant.Infrastructure.Persistence.Mapping;
 using AI.Assistant.Infrastructure.Repositories;
 using AI.Assistant.Infrastructure.Resilience;
 using AI.Assistant.Infrastructure.Services;
@@ -48,6 +49,8 @@ public static class DependencyInjection
             client.DefaultRequestHeaders.Add("authorization", assemblyApiKey);
         });
 
+        services.AddHttpClient<IWebService, WebService>();
+
         services.AddSingleton<IAiService, AiService>();
         services.AddSingleton<ISanitizerAgent, SanitizerAgent>();
 
@@ -55,6 +58,9 @@ public static class DependencyInjection
 
         services.AddTransient<IChatCompletionService>(sp =>
             sp.GetRequiredService<Kernel>().GetRequiredService<IChatCompletionService>());
+
+        var autoMapperLicenseKey = config.GetValue<string>("AutoMapperLicenseKey");
+        services.AddAutoMapper(cfg => { cfg.LicenseKey = autoMapperLicenseKey; }, typeof(MappingProfile).Assembly);
 
         return services;
     }
