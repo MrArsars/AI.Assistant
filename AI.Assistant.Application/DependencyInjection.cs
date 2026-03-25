@@ -12,6 +12,9 @@ public static class DependencyInjection
         services.AddTransient<IReminderService, ReminderService>();
         services.AddSingleton<ProactivePublisher>();
 
+        services.AddTransient<IMessagesService, MessagesService>();
+        services.AddSingleton<IHistoryService, HistoryService>();
+
         services.AddHostedService(provider =>
             provider.GetRequiredService<ProactivePublisher>());
 

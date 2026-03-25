@@ -1,9 +1,11 @@
-﻿using AI.Assistant.Core.Extensions;
+﻿using AI.Assistant.Application.Extensions;
+using AI.Assistant.Application.Interfaces;
+using AI.Assistant.Core;
 using AI.Assistant.Core.Interfaces;
 using Microsoft.SemanticKernel.ChatCompletion;
 using static AI.Assistant.Core.Prompts.Prompts;
 
-namespace AI.Assistant.Core.Services;
+namespace AI.Assistant.Application.Services;
 
 public class HistoryService(IMessagesService messagesService, IContextProvider contextProvider, Settings settings)
     : IHistoryService

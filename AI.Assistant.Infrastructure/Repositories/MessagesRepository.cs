@@ -1,5 +1,5 @@
-﻿using AI.Assistant.Core;
-using AI.Assistant.Core.Interfaces;
+﻿using AI.Assistant.Application.Interfaces;
+using AI.Assistant.Core;
 using AI.Assistant.Core.Models;
 using AI.Assistant.Infrastructure.Persistence.Models;
 using AutoMapper;

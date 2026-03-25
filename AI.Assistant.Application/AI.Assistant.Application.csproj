@@ -10,4 +10,8 @@
       <ProjectReference Include="..\AI.Assistant.Core\AI.Assistant.Core.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <PackageReference Include="Microsoft.SemanticKernel.Abstractions" Version="1.68.0"/>
+    </ItemGroup>
+
 </Project>

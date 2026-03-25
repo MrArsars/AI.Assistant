@@ -1,6 +1,6 @@
 ﻿using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace AI.Assistant.Core.Interfaces;
+namespace AI.Assistant.Application.Interfaces;
 
 public interface IMessagesService
 {

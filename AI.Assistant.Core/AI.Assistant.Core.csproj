@@ -11,7 +11,6 @@
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="11.0.0-preview.1.26104.118"/>
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="11.0.0-preview.1.26104.118"/>
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.1" />
-      <PackageReference Include="Microsoft.SemanticKernel.Abstractions" Version="1.68.0" />
     </ItemGroup>
 
     <ItemGroup>
