@@ -7,6 +7,7 @@ using AI.Assistant.Infrastructure.Resilience;
 using AI.Assistant.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
@@ -19,6 +20,10 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration config)
     {
+        services.AddOptions<InfrastructureSettings>()
+            .Bind(config.GetSection(InfrastructureSettings.SectionName))
+            .ValidateOnStart();
+
         services.AddSingleton(new GeminiPromptExecutionSettings()
         {
             ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
@@ -28,9 +33,10 @@ public static class DependencyInjection
 
         services.AddSingleton<IPolicyRegistry<string>>(registry);
 
-        services.AddSingleton(_ =>
+        services.AddSingleton(sp =>
         {
-            var client = new Client(config["SupabaseUrl"]!, config["SupabaseApiToken"],
+            var settings = sp.GetRequiredService<IOptions<InfrastructureSettings>>().Value;
+            var client = new Client(settings.SupabaseUrl, settings.SupabaseApiToken,
                 new SupabaseOptions { AutoConnectRealtime = true });
             client.InitializeAsync().Wait();
             return client;
@@ -42,11 +48,11 @@ public static class DependencyInjection
         services.AddTransient<IContextProvider, ContextRepository>();
         services.AddTransient<IRemindersRepository, RemindersRepository>();
 
-        services.AddHttpClient<IVoiceTranscriptionService, VoiceTranscriptionService>(client =>
+        services.AddHttpClient<IVoiceTranscriptionService, VoiceTranscriptionService>((sp, client) =>
         {
-            client.BaseAddress = new Uri("https://api.assemblyai.com/v2/");
-            var assemblyApiKey = config.GetValue<string>("AssemblyAiApiKey");
-            client.DefaultRequestHeaders.Add("authorization", assemblyApiKey);
+            var settings = sp.GetRequiredService<IOptions<InfrastructureSettings>>().Value;
+            client.BaseAddress = new Uri(settings.AssemblyAiApiUrl);
+            client.DefaultRequestHeaders.Add("authorization", settings.AssemblyAiApiKey);
         });
 
         services.AddHttpClient<IWebService, WebService>();
@@ -59,8 +65,11 @@ public static class DependencyInjection
         services.AddTransient<IChatCompletionService>(sp =>
             sp.GetRequiredService<Kernel>().GetRequiredService<IChatCompletionService>());
 
-        var autoMapperLicenseKey = config.GetValue<string>("AutoMapperLicenseKey");
-        services.AddAutoMapper(cfg => { cfg.LicenseKey = autoMapperLicenseKey; }, typeof(MappingProfile).Assembly);
+        services.AddAutoMapper((sp, cfg) =>
+        {
+            var settings = sp.GetRequiredService<IOptions<InfrastructureSettings>>().Value;
+            cfg.LicenseKey = settings.AutoMapperLicenseKey;
+        }, typeof(MappingProfile).Assembly);
 
         return services;
     }

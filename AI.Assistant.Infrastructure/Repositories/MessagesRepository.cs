@@ -1,8 +1,9 @@
-﻿using AI.Assistant.Application.Interfaces;
-using AI.Assistant.Core;
+﻿using AI.Assistant.Application;
+using AI.Assistant.Application.Interfaces;
 using AI.Assistant.Core.Models;
 using AI.Assistant.Infrastructure.Persistence.Models;
 using AutoMapper;
+using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Polly;
@@ -14,9 +15,9 @@ namespace AI.Assistant.Infrastructure.Repositories;
 
 public class MessagesRepository(
     Client client,
-    Settings settings,
     IPolicyRegistry<string> policyRegistry,
-    IMapper mapper)
+    IMapper mapper,
+    IOptions<ApplicationSettings> settings)
     : IMessagesRepository
 {
     private readonly IAsyncPolicy _retryPolicy = policyRegistry.Get<IAsyncPolicy>("DbRetryPolicy");
@@ -34,7 +35,7 @@ public class MessagesRepository(
             var rows = await client.From<MessageDto>()
                 .Order(x => x.CreatedAt, Ordering.Descending)
                 .Where(x => x.ChatId == chatId)
-                .Limit(useLimit ? settings.HistoryMinLimit : int.MaxValue)
+                .Limit(useLimit ? settings.Value.HistoryMinLimit : int.MaxValue)
                 .Get();
 
             var messages = rows.Models.AsEnumerable()

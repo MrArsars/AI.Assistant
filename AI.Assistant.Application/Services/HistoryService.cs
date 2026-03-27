@@ -1,13 +1,16 @@
 ﻿using AI.Assistant.Application.Extensions;
 using AI.Assistant.Application.Interfaces;
-using AI.Assistant.Core;
 using AI.Assistant.Core.Interfaces;
+using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel.ChatCompletion;
 using static AI.Assistant.Core.Prompts.Prompts;
 
 namespace AI.Assistant.Application.Services;
 
-public class HistoryService(IMessagesService messagesService, IContextProvider contextProvider, Settings settings)
+public class HistoryService(
+    IMessagesService messagesService,
+    IContextProvider contextProvider,
+    IOptions<ApplicationSettings> settings)
     : IHistoryService
 {
     private readonly Dictionary<long, ChatHistory> _historiesCollection = new();
@@ -52,7 +55,7 @@ public class HistoryService(IMessagesService messagesService, IContextProvider c
 
     public async Task TrimHistoryIfNeeded(ChatHistory history, long chatId)
     {
-        if (history.Count(x => x.Role == AuthorRole.User) > settings.HistoryMaxLimit)
+        if (history.Count(x => x.Role == AuthorRole.User) > settings.Value.HistoryMaxLimit)
         {
             history.Clear();
             await Initialize(chatId, history);
