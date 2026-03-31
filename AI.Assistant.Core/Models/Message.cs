@@ -5,6 +5,7 @@ public class Message
     public Guid? Id { get; set; }
     public long ChatId { get; set; }
     public string Role { get; set; } = string.Empty;
+    public string Source { get; set; } = string.Empty;
     public string Text { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
 
@@ -14,10 +15,11 @@ public class Message
     {
     }
 
-    public Message(long chatId, string role, string text, float[]? embedding)
+    public Message(long chatId, string role, string source, string text, float[]? embedding)
     {
         ChatId = chatId;
         Role = role;
+        Source = source;
         Text = text;
         CreatedAt = DateTime.Now;
         Embedding = embedding;

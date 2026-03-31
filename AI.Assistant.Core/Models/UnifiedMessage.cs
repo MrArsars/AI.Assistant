@@ -3,6 +3,6 @@
 public record UnifiedMessage(
     string Content,
     string MessageType,
-    DateTime Timestamp,
+    string Timestamp,
     double? Confidence = null
 );

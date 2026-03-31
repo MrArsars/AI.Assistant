@@ -28,14 +28,16 @@ public class BotHandler(MessageHandler handler, ISanitizerAgent sanitizerAgent, 
             return;
         }
 
-        await ProcessAiFlowAsync(message.Chat.Id, rawText, message.Voice != null ? "Voice" : "Text", botClient, ct);
+        var type = message.Voice != null ? MessageType.Voice : MessageType.Text;
+
+        await ProcessAiFlowAsync(message.Chat.Id, rawText, type, botClient, ct);
     }
 
-    private async Task ProcessAiFlowAsync(long chatId, string rawText, string type, ITelegramBotClient botClient,
+    private async Task ProcessAiFlowAsync(long chatId, string rawText, MessageType type, ITelegramBotClient botClient,
         CancellationToken ct)
     {
-        var sanitized = await sanitizerAgent.SanitizeAsync(rawText, type, ct);
-        var reply = await handler.GenerateResponseAsync(chatId, sanitized.Content, MessageSource.Telegram, ct);
+        var sanitized = await sanitizerAgent.SanitizeAsync(rawText, nameof(type), ct);
+        var reply = await handler.GenerateResponseAsync(chatId, sanitized.Content, MessageSource.Telegram, type, ct);
 
         await SendLargeMessageAsync(chatId, reply, botClient, ct);
     }
