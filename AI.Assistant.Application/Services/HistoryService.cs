@@ -39,9 +39,8 @@ public class HistoryService(
     public async Task AddMessageAsync(long chatId, string text, AuthorRole role, MessageType? type,
         float[]? embedding = null)
     {
-        var content = GenerateMetaContent(type, role, text);
         var history = await GetHistoryByChatId(chatId);
-        history.AddMessage(role, content);
+        history.AddMessage(role, text);
         await messagesService.SaveToRepositoryAsync(text, chatId, role, embedding);
     }
 
@@ -63,23 +62,5 @@ public class HistoryService(
             history.Clear();
             await Initialize(chatId, history);
         }
-    }
-
-    private static string GenerateMetaContent(MessageType? type, AuthorRole role, string text)
-    {
-        var author = $"{role.Label} message";
-
-        var msgType = type switch
-        {
-            MessageType.Text => "text message",
-            MessageType.Voice => "voice message transcript",
-            _ => "unknown"
-        };
-
-        var timeStamp = DateTime.Now.ToString("dd MMMM HH:mm");
-
-        var content = $"[{author}. Message type: {msgType} - {timeStamp}]\n{text}";
-
-        return content;
     }
 }

@@ -8,6 +8,9 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
+        AllowNullCollections = true;
+        AllowNullDestinationValues = true;
+
         CreateMap<MessageDto, Message>()
             .ForMember(dest => dest.Embedding,
                 opt => opt.MapFrom(src => src.Embedding != null ? src.Embedding.ToArray() : null));
