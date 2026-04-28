@@ -27,7 +27,8 @@ public class SanitizerAgent(Kernel kernel) : ISanitizerAgent
         {
             ResponseMimeType = "application/json",
             ResponseSchema = schema,
-            ToolCallBehavior = null
+            ToolCallBehavior = null,
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         };
 
         var prompt =

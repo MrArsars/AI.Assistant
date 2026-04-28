@@ -9,7 +9,11 @@ using Telegram.Bot.Types;
 
 namespace AI.Assistant.Presentation.Telegram.Handlers;
 
-public class BotHandler(MessageHandler handler, ISanitizerAgent sanitizerAgent, IFileService fileService)
+public class BotHandler(
+    MessageHandler handler,
+    ISanitizerAgent sanitizerAgent,
+    IFileService fileService,
+    IJsonConverterService jsonConverterService)
 {
     public async Task HandleMessageAsync(ITelegramBotClient botClient, Update update, CancellationToken ct)
     {
@@ -36,8 +40,11 @@ public class BotHandler(MessageHandler handler, ISanitizerAgent sanitizerAgent, 
     private async Task ProcessAiFlowAsync(long chatId, string rawText, MessageType type, ITelegramBotClient botClient,
         CancellationToken ct)
     {
-        var sanitized = await sanitizerAgent.SanitizeAsync(rawText, nameof(type), ct);
-        var reply = await handler.GenerateResponseAsync(chatId, sanitized.Content, MessageSource.Telegram, type, ct);
+        // var sanitized = await sanitizerAgent.SanitizeAsync(rawText, nameof(type), ct);
+        var request = new AiRequest(rawText, type, MessageSource.Telegram);
+
+        var requestJson = jsonConverterService.RequestToJson(request);
+        var reply = await handler.GenerateResponseAsync(chatId, requestJson, ct);
 
         await SendLargeMessageAsync(chatId, reply, botClient, ct);
     }

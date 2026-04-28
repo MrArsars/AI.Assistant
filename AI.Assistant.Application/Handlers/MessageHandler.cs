@@ -1,4 +1,5 @@
-﻿using AI.Assistant.Application.Interfaces;
+﻿using System.Text.Json;
+using AI.Assistant.Application.Interfaces;
 using AI.Assistant.Core.Models;
 using Microsoft.SemanticKernel.ChatCompletion;
 using static AI.Assistant.Core.Prompts.Prompts;
@@ -9,23 +10,24 @@ public class MessageHandler(
     IHistoryService historyService,
     IAiService aiService,
     IVoiceTranscriptionService voiceTranscriptionService,
-    IEmbeddingService embeddingService
+    IEmbeddingService embeddingService,
+    IJsonConverterService jsonConverterService
 )
 {
-    public async Task<string> GenerateResponseAsync(long chatId, string message, MessageSource source, MessageType type,
-        CancellationToken ct)
+    public async Task<string> GenerateResponseAsync(long chatId, string json, CancellationToken ct)
     {
+        var request = jsonConverterService.RequestFromJson(json);
         var history = await historyService.GetHistoryByChatId(chatId);
         await historyService.TrimHistoryIfNeeded(history, chatId);
-        var embedding = await embeddingService.GetEmbeddingFromTextAsync(message, ct);
-        await historyService.AddMessageAsync(chatId, message, AuthorRole.User, type, embedding);
+        var embedding = await embeddingService.GetEmbeddingFromTextAsync(request.Content, ct);
+        await historyService.AddMessageAsync(chatId, json, AuthorRole.User, request.MessageType, embedding);
 
-        var reply = await aiService.GetAiResponse(history, chatId, source);
+        var reply = await aiService.GetAiResponse(history, chatId);
 
-        embedding = await embeddingService.GetEmbeddingFromTextAsync(message, ct);
+        embedding = await embeddingService.GetEmbeddingFromTextAsync(request.Content, ct);
         await historyService.AddMessageAsync(chatId, reply, AuthorRole.Assistant, embedding: embedding);
 
-        return reply;
+        return GetCleanText(reply);
     }
 
     public async Task<string> TranscriptVoiceMessage(Stream memoryStream, CancellationToken cancellationToken)
@@ -45,5 +47,18 @@ public class MessageHandler(
         var introduceMessage = Introduction;
         await historyService.AddMessageAsync(chatId, introduceMessage, AuthorRole.Assistant);
         return introduceMessage;
+    }
+
+    private string GetCleanText(string aiRawResponse)
+    {
+        try
+        {
+            var parsed = JsonSerializer.Deserialize<AiResponse>(aiRawResponse);
+            return parsed?.Content ?? aiRawResponse;
+        }
+        catch
+        {
+            return aiRawResponse;
+        }
     }
 }

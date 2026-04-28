@@ -10,7 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.Google;
 using Polly.Registry;
 using Supabase;
 
@@ -23,11 +22,6 @@ public static class DependencyInjection
         services.AddOptions<InfrastructureSettings>()
             .Bind(config.GetSection(InfrastructureSettings.SectionName))
             .ValidateOnStart();
-
-        services.AddSingleton(new GeminiPromptExecutionSettings()
-        {
-            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
-        });
 
         var registry = new PolicyRegistry { { "DbRetryPolicy", ResiliencePolicyFactory.GetDbRetryPolicy() } };
 
@@ -59,6 +53,8 @@ public static class DependencyInjection
 
         services.AddSingleton<IAiService, AiService>();
         services.AddSingleton<ISanitizerAgent, SanitizerAgent>();
+
+        services.AddTransient<IJsonConverterService, JsonConverterService>();
 
         services.AddScoped<IEmbeddingService, EmbeddingService>();
 
